@@ -1343,7 +1343,7 @@ obj_string_stream (Bit_Chain *restrict dat, Dwg_Object *restrict obj,
 
   bit_advance_position (str, -1); //-17
   str->byte -= 2;
-  LOG_HANDLE (" @%lu.%u", str->byte, str->bit & 7);
+  // LOG_HANDLE (" @%lu.%u", str->byte, str->bit & 7);
   data_size = (BITCODE_RL)bit_read_RS (str);
   LOG_HANDLE (" data_size: %u/0x%x [RS]", data_size, data_size);
 
