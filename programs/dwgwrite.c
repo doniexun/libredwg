@@ -402,13 +402,10 @@ main (int argc, char *argv[])
   free (dat.chain);
   if (infile && dat.fh)
     fclose (dat.fh);
-  if (error >= DWG_ERR_CRITICAL)
+  if (error >= DWG_ERR_CRITICAL || dwg.header.from_version == R_INVALID)
     goto free;
 
-  if (dwg.header.from_version == R_INVALID)
-    fprintf (stderr, "Unknown DWG header.from_version");
-  // FIXME: for now only R_13 - R_2000. later remove this line.
-  if (dwg.header.from_version < R_13 || dwg.header.from_version >= R_2004)
+  if (version)
     dat.version = dwg.header.version = dwg_version;
   else
     dat.version = dwg.header.version = dwg.header.from_version;
