@@ -50,9 +50,9 @@ static int
 usage (void)
 {
 #ifndef DISABLE_DXF
-  printf ("\nUsage: dwgread [-v[0-9]] [-O FMT] [-o OUTFILE] [DWGFILE|-]\n");
+  printf ("\nUsage: dwgread [-v[0-9]] [--as rNNNN] [-O FMT] [-o OUTFILE] [DWGFILE|-]\n");
 #else
-  printf ("\nUsage: dwgread [-v[0-9]] [DWGFILE|-]\n");
+  printf ("\nUsage: dwgread [-v[0-9]] [--as rNNNN] [DWGFILE|-]\n");
 #endif
   return 1;
 }
@@ -79,6 +79,11 @@ help (void)
   printf ("  -O fmt,  --format fmt     fmt: DXF, DXFB\n");
 #  endif
   printf ("           Planned output formats:  YAML, XML/OGR, GPX, SVG, PS\n");
+  printf ("  --as rNNNN                save as other version\n");
+  printf ("           Valid versions:\n");
+  printf ("                r12, r14, r2000, r2004, r2007, r2010, r2013, r2018\n");
+  printf ("           Planned versions:\n");
+  printf ("             r9, r10, r11\n");
   printf ("  -o outfile                also defines the output fmt. Default: "
           "stdout\n");
 #endif
@@ -96,6 +101,11 @@ help (void)
   printf ("              Planned output formats:  YAML, XML/OGR, GPX, SVG, PS\n");
   printf ("  -o outfile  also defines the output fmt. Default: stdout\n");
 #endif
+  printf ("  -a rNNNN    save as other version\n");
+  printf ("              Valid versions:\n");
+  printf ("                r12, r14, r2000, r2004, r2007, r2010, r2013, r2018\n");
+  printf ("              Planned versions:\n");
+  printf ("                r9, r10, r11\n");
   printf ("  -h          display this help and exit\n");
   printf ("  -i          output version information and exit\n"
           "\n");
@@ -113,6 +123,8 @@ main (int argc, char *argv[])
   Dwg_Data dwg;
   const char *fmt = NULL;
   const char *outfile = NULL;
+  const char *version = NULL;
+  Dwg_Version_Type dwg_version = R_INVALID;
   int has_v = 0;
   int force_free = 0;
   int c;
@@ -121,7 +133,8 @@ main (int argc, char *argv[])
   static struct option long_options[]
       = { { "verbose", 1, &opts, 1 }, // optional
           { "format", 1, 0, 'O' },    { "file", 1, 0, 'o' },
-          { "help", 0, 0, 0 },        { "version", 0, 0, 0 },
+          { "as", 1, 0, 'a' },        { "help", 0, 0, 0 },
+          { "version", 0, 0, 0 },
           { "force-free", 0, 0, 0 },
           { NULL, 0, NULL, 0 } };
 #endif
@@ -131,10 +144,10 @@ main (int argc, char *argv[])
 
   while
 #ifdef HAVE_GETOPT_LONG
-      ((c = getopt_long (argc, argv, ":v::O:o:h", long_options, &option_index))
+      ((c = getopt_long (argc, argv, "a:v::O:o:h", long_options, &option_index))
        != -1)
 #else
-      ((c = getopt (argc, argv, ":v::O:o:hi")) != -1)
+      ((c = getopt (argc, argv, "a:v::O:o:hi")) != -1)
 #endif
     {
       if (c == -1)
@@ -182,6 +195,15 @@ main (int argc, char *argv[])
 #endif
         case 'O':
           fmt = optarg;
+          break;
+        case 'a':
+          dwg_version = dwg_version_as (optarg);
+          if (dwg_version == R_INVALID)
+            {
+              fprintf (stderr, "Invalid version '%s'\n", argv[1]);
+              return usage ();
+            }
+          version = optarg;
           break;
         case 'o':
           outfile = optarg;
@@ -268,10 +290,13 @@ main (int argc, char *argv[])
         dat.fh = fopen (outfile, "w");
       else
         dat.fh = stdout;
+
+      if (version)
+        dat.version = dwg.header.version = dwg_version;
+      else
+        dat.version = dwg.header.version;
+
       fprintf (stderr, "\n");
-      dat.version = dat.from_version = dwg.header.version;
-      // TODO --as-rNNNN version? for now not.
-      // we want the native dump, converters are separate.
 #ifndef DISABLE_DXF
 #ifndef DISABLE_JSON
       if (!strcasecmp (fmt, "json"))
