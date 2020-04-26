@@ -374,6 +374,7 @@ main (int argc, char *argv[])
 
   if (!version)
     dat.version = dwg.header.version = dwg.header.from_version;
+  dat.from_version = dwg.header.from_version;
   if (minimal)
     dwg.opts |= DWG_OPTS_MINIMAL;
   dwg.opts |= opts;
