@@ -20,6 +20,7 @@
  * modified by Denis Pruchkovsky
  */
 
+#define DWG_SPEC
 #include "spec.h"
 
 /* (1/7) */
