@@ -38,6 +38,11 @@ Dwg_Object_Ref *dwg_find_objectref (const Dwg_Data *restrict dwg,
 // reused with the importers
 void decode_BACKGROUND_type (const Dwg_Object *obj);
 
+// reused with all
+int dwg_call_subent (Dwg_Data *restrict dwg, const char *const restrict action,
+                     Dwg_Object *restrict obj,
+                     Bit_Chain *dat, Bit_Chain *hdl_dat, Bit_Chain *str_dat);
+
 /*------------------------------------------------------------------------------
  * Functions reused with decode_r2007
  */
