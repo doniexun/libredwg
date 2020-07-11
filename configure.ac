@@ -117,7 +117,7 @@ dnl We just want to know if it's needed
 ac_cv_func_malloc_0_nonnull=yes
 ac_cv_func_realloc_0_nonnull=yes
 AC_CHECK_HEADERS([stdlib.h string.h stddef.h unistd.h malloc.h wchar.h ctype.h \
-                  float.h limits.h \
+                  float.h limits.h sys/mman.h \
                   libgen.h getopt.h alloca.h valgrind/valgrind.h])
 AC_CHECK_HEADER_STDBOOL
 AX_INCLUDE_STRCASECMP
@@ -257,6 +257,8 @@ AC_FUNC_MALLOC
 AC_FUNC_REALLOC
 AC_FUNC_STAT
 AC_FUNC_ALLOCA
+dnl this includes a MAP_FIXED check, which we don't need.
+AC_FUNC_MMAP
 dnl broken for cross-compiling
 dnl AC_FUNC_STRTOD
 AC_CHECK_FUNC([strtod],[],
