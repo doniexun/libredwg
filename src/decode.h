@@ -95,9 +95,17 @@ void section_string_stream (Dwg_Data *restrict dwg,
 
 /* from dwg.c */
 // from dat.fh
+EXPORT int dat_mmap_file (Bit_Chain *restrict dat, int prot);
+// Prefered fast bulk-read when we known the size. does mmap if avail
 EXPORT int dat_read_size (Bit_Chain *restrict dat);
+// does mmap if avail
 EXPORT int dat_read_file (Bit_Chain *restrict dat, FILE *restrict fp,
                           const char *restrict filename);
+// does no mmap yet, reads blockwise
 EXPORT int dat_read_stream (Bit_Chain *restrict dat, FILE *restrict fp);
+/* flose fh, and sync the map */
+EXPORT int dat_close_file (Bit_Chain *restrict dat);
+/* flose fh, sync and unmap the eventual chain, free the chain */
+EXPORT int dat_unmap_file (Bit_Chain *restrict dat);
 
 #endif

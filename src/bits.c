@@ -26,6 +26,7 @@
 #include <ctype.h>
 #include <stdint.h>
 #include <inttypes.h>
+#include <unistd.h> // ftruncate
 #include <math.h>
 #if defined(HAVE_WCHAR_H) && defined(SIZEOF_WCHAR_T) && SIZEOF_WCHAR_T == 2
 #  include <wchar.h>
@@ -3016,6 +3017,12 @@ bit_chain_init_dat (Bit_Chain *restrict dat, const int size,
  */
 void bit_chain_alloc_size (Bit_Chain *dat, const size_t size)
 {
+  if (dat->opts & DWG_OPTS_MMAP)
+    {
+      dat->size += CHAIN_BLOCK;
+      ftruncate (fileno (dat->fh), dat->size);
+      return;
+    }
   if (dat->size == 0)
     {
       bit_chain_init (dat, size);
