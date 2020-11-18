@@ -65,9 +65,10 @@ static int dxf_3dsolid (Bit_Chain *restrict dat,
                         const Dwg_Object *restrict obj,
                         Dwg_Entity_3DSOLID *restrict _obj);
 static void dxf_fixup_string (Bit_Chain *restrict dat, char *restrict str,
-                              const int opts, const int dxf, const int dxfcont);
-static void dxf_CMC (Bit_Chain *restrict dat, Dwg_Color *restrict color,
-                     const int dxf, const int opt);
+                              const int opts, const int dxf, const int dxfcont,
+                              const BITCODE_RS codepage);
+static void dxf_CMC (Bit_Chain *restrict dat, const Dwg_Object *restrict obj,
+                     Dwg_Color *restrict color, const int dxf, const int opt);
 
 /*--------------------------------------------------------------------------------
  * MACROS
@@ -85,12 +86,12 @@ static void dxf_CMC (Bit_Chain *restrict dat, Dwg_Color *restrict color,
 #define VALUE_TV(value, dxf)                                                  \
   {                                                                           \
     GROUP (dxf);                                                              \
-    dxf_fixup_string (dat, (char *)value, 1, dxf, dxf);                       \
+    dxf_fixup_string (dat, (char *)value, 1, dxf, dxf, dwg->header.codepage); \
   }
 #define VALUE_TV0(value, dxf)                                                 \
   if (dxf && value && *value) {                                               \
     GROUP (dxf);                                                              \
-    dxf_fixup_string (dat, (char *)value, 1, dxf, dxf);                       \
+    dxf_fixup_string (dat, (char *)value, 1, dxf, dxf, dwg->header.codepage); \
   }
 // in_json writes all strings as TV, in_dxf and decode not.
 #define VALUE_TU(wstr, dxf)                                                   \
@@ -105,7 +106,7 @@ static void dxf_CMC (Bit_Chain *restrict dat, Dwg_Color *restrict color,
         GROUP (dxf);                                                          \
         if (u8)                                                               \
           {                                                                   \
-            dxf_fixup_string (dat, u8, 1, dxf, dxf);                          \
+            dxf_fixup_string (dat, u8, 1, dxf, dxf, dwg->header.codepage);    \
           }                                                                   \
         else                                                                  \
           fprintf (dat->fh, "\r\n");                                          \
@@ -117,7 +118,7 @@ static void dxf_CMC (Bit_Chain *restrict dat, Dwg_Color *restrict color,
     if (dxf)                                                                  \
       {                                                                       \
         GROUP (dxf);                                                          \
-        dxf_fixup_string (dat, (char *)str, 0, dxf, dxf);                     \
+        dxf_fixup_string (dat, (char *)str, 0, dxf, dxf, dwg->header.codepage);\
       }                                                                       \
   }
 #define VALUE_BINARY(value, size, dxf)                                        \
@@ -682,9 +683,9 @@ dxf_print_rd (Bit_Chain *dat, BITCODE_RD value, int dxf)
   }
 #define FIELD_3DPOINT(nam, dxf) FIELD_3BD (nam, dxf)
 
-#define FIELD_CMC(color, dxf) dxf_CMC (dat, (Dwg_Color*)&_obj->color, dxf, 0)
-#define SUB_FIELD_CMC(o, color, dxf) dxf_CMC (dat, (Dwg_Color*)&_obj->o.color, dxf, 0)
-#define FIELD_CMC0(color, dxf) dxf_CMC (dat, (Dwg_Color*)&_obj->color, dxf, 1)
+#define FIELD_CMC(color, dxf) dxf_CMC (dat, obj, (Dwg_Color*)&_obj->color, dxf, 0)
+#define SUB_FIELD_CMC(o, color, dxf) dxf_CMC (dat, obj, (Dwg_Color*)&_obj->o.color, dxf, 0)
+#define FIELD_CMC0(color, dxf) dxf_CMC (dat, obj, (Dwg_Color*)&_obj->color, dxf, 1)
 
 #define HEADER_TIMEBLL(nam, dxf) {                                            \
   HEADER_9 (nam);                                                             \
@@ -1015,9 +1016,10 @@ static int dwg_dxf_TABLECONTENT (Bit_Chain *restrict dat,
 // Skip index 256 bylayer
 // 257 is for method c8 NONE. Which index is for ByBlock?
 // If the dxf code is 90-99 rather emit the rgb only
-static void dxf_CMC (Bit_Chain *restrict dat, Dwg_Color *restrict color,
-                     const int dxf, const int opt)
+static void dxf_CMC (Bit_Chain *restrict dat, const Dwg_Object *restrict obj,
+                     Dwg_Color *restrict color, const int dxf, const int opt)
 {
+  const Dwg_Data *dwg = obj->parent;
   if (dat->version >= R_2004)
     {
       if (dat->from_version < R_2004)
@@ -1091,20 +1093,15 @@ static void dxf_CMC (Bit_Chain *restrict dat, Dwg_Color *restrict color,
     }
 }
 
-/* fixme: shift-jis decoding
-"\M+182B1\M+182CC\M+1907D\M+19867\M+182CD\M+18354\M+18393\M+18376\M+1838B\M+182C5\M+182B7\M+18142\M+18ED0\M+193E0\M+182CC\M+18B4B\M+18A69\M+182E2\M+18376\M+1838D\M+18362\M+1835E\M+182CC\M+18F6F\M+197CD\M+194CD\M+188CD\M+182C9\M+18D87\M+182ED\M+182B9\M+182C4\M+1934B\M+19396\M+182C9\M+195CF\M+18D58\M+182B5\M+182C4\M+182B2\M+19798\M+19770\M+182AD\M+182BE\M+182B3\M+182A2\M+18142"
-=>
-"\U+3053\U+306E\U+56F3\U+67A0\U+306F\U+30B5\U+30F3\U+30D7\U+30EB\U+3067\U+3059\U+3002\U+793E\U+5185\U+306E\U+898F\U+683C\U+3084\U+30D7\U+30ED\U+30C3\U+30BF\U+306E\U+51FA\U+529B\U+7BC4\U+56F2\U+306B\U+5408\U+308F\U+305B\U+3066\U+9069\U+5F53\U+306B\U+5909\U+66F4\U+3057\U+3066\U+3054\U+5229\U+7528\U+304F\U+3060\U+3055\U+3044\U+3002"
-*/
 static char *
 cquote (char *restrict dest, const int len, const char *restrict src)
 {
-  char c;
+  unsigned char c;
   char *d = dest;
   const char* dend = dest + len;
   const char* send = src + strlen(src);
   char *s = (char *)src;
-  while ((s < send) && (c = *s++) && dest < dend)
+  while ((s < send) && (c = *(unsigned char*)s++) && dest < dend)
     {
       if (c == '\n' && dest+1 < dend)
         {
@@ -1145,6 +1142,17 @@ cquote (char *restrict dest, const int len, const char *restrict src)
               s += 3;
             }
         }
+      // FIXME Unicode c>255 => \U+XXXX
+      /* ansi-1250 (cp=28):
+         not quoted: fd e1 c4
+         quoted: ec => 11b, f2 => 148, c8 => 10c, e8 => 10d, be => 13e */
+      /*
+      else if (c > 0xc0 && !(c % 2) && dest+7 < endp)
+        {
+          sprintf (dest, "\\U+%04X", c);
+          dest += 7;
+        }
+      */
       else
         *dest++ = c;
     }
@@ -1159,11 +1167,14 @@ cquote (char *restrict dest, const int len, const char *restrict src)
  */
 static void
 dxf_fixup_string (Bit_Chain *restrict dat, char *restrict str,
-                  const int opts, const int dxf, const int dxfcont)
+                  const int opts, const int dxf, const int dxfcont,
+                  const BITCODE_RS codepage)
 {
   if (str && *str)
     {
-      if (opts && (strchr (str, '\n') || strchr (str, '\r') || strstr (str, "\\M+1")))
+      // FIXME: in codepage conversions we need to quote much more
+      if (opts && ( /*codepage != 30 || */
+          strchr (str, '\n') || strchr (str, '\r') || strstr (str, "\\M+1")))
         {
           const int origlen = strlen (str);
           int len = (2 * origlen) + 1;
@@ -1395,7 +1406,8 @@ static int
 dxf_write_xdata (Bit_Chain *restrict dat, const Dwg_Object *restrict obj,
                  Dwg_Resbuf *restrict rbuf, BITCODE_BL size)
 {
-  Dwg_Resbuf *tmp;
+  const Dwg_Data *restrict dwg = obj->parent;
+  Dwg_Resbuf *restrict tmp;
   int i;
 
   while (rbuf)
