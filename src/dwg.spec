@@ -3196,11 +3196,11 @@ DWG_OBJECT (LTYPE)
               {
                 if (dash_i >= 256)
                   {
-                    LOG_ERROR ("dashes[%u] overflow @%u", rcount1, dash_i)
+                    LOG_ERROR ("dashes[%u] overflow @%u", rcount1, dash_i);
                     break;
                   }
                 _obj->dashes[rcount1].text = (char*)&_obj->strings_area[dash_i];
-                LOG_TRACE ("dashes[%u] @%u\n", rcount1, dash_i)
+                LOG_TRACE ("dashes[%u] @%u\n", rcount1, dash_i);
                 dash_i += strnlen (_obj->dashes[rcount1].text, 256 - dash_i) + 1;
               }
           }
@@ -3218,12 +3218,13 @@ DWG_OBJECT (LTYPE)
               {
                 if (dash_i >= 512)
                   {
-                    LOG_ERROR ("dashes[%u] overflow @%u", rcount1, dash_i)
+                    LOG_ERROR ("dashes[%u] overflow @%u", rcount1, dash_i);
                     break;
                   }
-                _obj->dashes[rcount1].text = (char*)&_obj->strings_area[dash_i];
-                LOG_TRACE ("dashes[%u] @%u\n", rcount1, dash_i)
-                dash_i += (2 * bit_wcs2nlen ((BITCODE_TU)_obj->dashes[rcount1].text, 256 - (dash_i / 2))) + 2;
+                _obj->dashes[rcount1].text = (char *)&_obj->strings_area[dash_i];
+                LOG_TRACE ("dashes[%u] @%u\n", rcount1, dash_i);
+                dash_i += (2 * bit_wcs2nlen ((BITCODE_TU)_obj->dashes[rcount1].text,
+                                             256 - (dash_i / 2))) + 2;
               }
           }
       }

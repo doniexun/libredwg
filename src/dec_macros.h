@@ -436,6 +436,8 @@
   {                                                                           \
     SINCE (R_13) { _obj->nam = NULL; VECTOR_CHKCOUNT (nam, TF, len, dat) }    \
     _obj->nam = bit_read_TF (dat, (int)len);                                  \
+    if (_obj->nam)                                                            \
+      return DWG_ERR_VALUEOUTOFBOUNDS;                                        \
     LOG_TRACE (#nam ": \"%s\" [TF %lu " #dxf "]", _obj->nam,                  \
                (unsigned long)len);                                           \
     LOG_INSANE (" @%lu.%u", dat->byte, dat->bit)                              \

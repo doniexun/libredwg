@@ -2793,6 +2793,11 @@ read_2004_section_header (Bit_Chain *restrict dat, Dwg_Data *restrict dwg)
         free (sec_dat.chain);
       return error;
     }
+    if (dat->size - dat->byte <= 200)
+      {
+        LOG_ERROR ("Not enough space for HEADER %lu", dat->size - dat->byte);
+        return error | DWG_ERR_INVALIDDWG;
+      }
 
   if (bit_search_sentinel (&sec_dat, dwg_sentinel (DWG_SENTINEL_VARIABLE_BEGIN)))
     {
@@ -3731,7 +3736,6 @@ decode_R2004 (Bit_Chain *restrict dat, Dwg_Data *restrict dwg)
     #include "header.spec"
     // clang-format on
   }
-
   LOG_HANDLE ("\nempty R2004 slack (@%lu.0-%u.0, %ld):\n", dat->byte - 54, 0x80,
               0x80 - (dat->byte - 54));
   LOG_TF (HANDLE, &dat->chain[dat->byte], (int)(0x80 - dat->byte));
