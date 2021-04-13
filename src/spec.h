@@ -1,7 +1,7 @@
 /*****************************************************************************/
 /*  LibreDWG - free implementation of the DWG file format                    */
 /*                                                                           */
-/*  Copyright (C) 2018-2020 Free Software Foundation, Inc.                   */
+/*  Copyright (C) 2018-2021 Free Software Foundation, Inc.                   */
 /*                                                                           */
 /*  This library is free software, licensed under the terms of the GNU       */
 /*  General Public License as published by the Free Software Foundation,     */
@@ -17,6 +17,8 @@
 #  define _GNU_SOURCE
 #  include <string.h>
 #  include "decode.h"
+#  include "common.h"
+#  include "free.h"
 
 #  define DECODER if (0)
 #  define ENCODER if (0)
@@ -26,7 +28,7 @@
 #  define DXF_OR_PRINT if (0)
 #  define DXF if (0)
 #  define JSON if (0)
-#  define FREE if (0)
+#  define ON_FREE if (0)
 #  define IF_FREE_OR_SINCE(x) SINCE (x)
 #  define IF_FREE_OR_VERSIONS(x,y) VERSIONS(x, y)
 #  define IF_ENCODE_FROM_EARLIER if (0)
@@ -482,8 +484,8 @@
 #endif
 
 #if defined(IS_FREE)
-#  undef FREE
-#  define FREE if (1)
+#  undef ON_FREE
+#  define ON_FREE if (1)
 #  undef IF_IS_FREE
 #  define IF_IS_FREE 1
 #  undef IF_FREE_OR_SINCE
@@ -503,7 +505,7 @@
 
 #define DECODE_UNKNOWN_BITS                                                   \
   DECODER { dwg_decode_unknown (dat, (Dwg_Object * restrict) obj); }          \
-  FREE { VALUE_TF (obj->unknown_bits, 0); }
+  ON_FREE { VALUE_TF (obj->unknown_bits, 0); }
 
 #ifndef START_OBJECT_HANDLE_STREAM
 #  define START_OBJECT_HANDLE_STREAM                                          \
@@ -578,7 +580,7 @@
   _ adds idx
   C does no checks
   N does constant times (else _obj->times)
-  F does not calloc/free
+  F does not CALLOC/free
 */
 
 // unchecked with constant times

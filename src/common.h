@@ -29,6 +29,9 @@
 #include <stdint.h>
 #include <inttypes.h>
 #include "dwg.h"
+#ifdef HAVE_LIBGC
+#include <gc/gc.h>
+#endif
 
 /* Used warning suppressions:
    CLANG_DIAG_IGNORE (-Wpragma-pack)
@@ -175,6 +178,33 @@
 #define TODO_ENCODER HANDLER (OUTPUT, "TODO: Encoder\n");
 #define TODO_DECODER HANDLER (OUTPUT, "TODO: Decoder\n");
 
+#ifndef HAVE_LIBGC
+#undef  ATTRIBUTE_MALLOC
+#define ATTRIBUTE_MALLOC
+#define MALLOC(x)      malloc(x)
+#define CALLOC(x,y)    calloc((x),(y))
+#define REALLOC(x,y)   realloc((x),(y))
+#define MALLOC_ATOMIC(x) malloc(x)
+#define STRDUP(x)      strdup(x)
+#define FREE(x)        free(x)
+#define FREE_IF(ptr)                                                          \
+  {                                                                           \
+    if (ptr)                                                                  \
+      free (ptr);                                                             \
+    ptr = NULL;                                                               \
+  }
+#define GC_INIT()
+#else
+#define MALLOC(x)      GC_MALLOC(x)
+#define CALLOC(x,y)    GC_MALLOC((x)*(y))
+#define REALLOC(x,y)   GC_REALLOC((x),(y))
+#define MALLOC_ATOMIC(x) GC_MALLOC_ATOMIC(x)
+#define STRDUP(x)      GC_STRDUP(x)
+#define FREE(x)        do { } while(0)
+#define FREE_IF(x)     do { } while(0)
+#define dwg_free(x)
+#endif
+
 // Exporters are more common in the spec format, in_json and in_dxf are not using it.
 // So default to the encode-to format. dec_macros needs to override them.
 // See importer.h for the other way: For decode, in_json, in_dxf.
@@ -318,7 +348,7 @@ void *memmem (const void *h0, size_t k, const void *n0, size_t l) __nonnull((1, 
 // push to handle vector at the end. It really is unshift.
 #define PUSH_HV(_obj, numfield, hvfield, ref)                                 \
   {                                                                           \
-    _obj->hvfield = (BITCODE_H *)realloc (                                    \
+    _obj->hvfield = (BITCODE_H *)REALLOC (                                    \
         _obj->hvfield, (_obj->numfield + 1) * sizeof (BITCODE_H));            \
     _obj->hvfield[_obj->numfield] = ref;                                      \
     LOG_TRACE ("%s[%d] = " FORMAT_REF " [H]\n", #hvfield, _obj->numfield,     \

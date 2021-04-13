@@ -103,7 +103,7 @@ api_process (dwg_object *obj)
                 }
             }
         }
-      free (silhouettes);
+      FREE (silhouettes);
     }
   else
     fail ("ACSH_BREP_CLASS.silhouettes");

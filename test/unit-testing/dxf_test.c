@@ -137,7 +137,7 @@ test_subclass (const Dwg_Data *restrict dwg, const void *restrict ptr,
               fail ("%s[%d].%s: %s [STRING %s]", fieldname, index, key, value, field.type);
           }
         if (isnew)
-          free (value);
+          FREE (value);
       }
       break;
     case DWG_VT_POINT3D:
@@ -406,7 +406,7 @@ test_object (const Dwg_Data *restrict dwg, const Dwg_Object *restrict obj,
       // support subclass, as in in_json
       if (strchr (f->name, '.'))
         {
-          char *subf = strdup (f->name);
+          char *subf = STRDUP (f->name);
           char *key = strchr (subf, '.');
           char *subclass;
           char *p;
@@ -437,20 +437,20 @@ test_object (const Dwg_Data *restrict dwg, const Dwg_Object *restrict obj,
           // generalize. lookup type of subclass field
           if (!(fp1 = dwg_dynapi_entity_field (name, subf)))
             {
-              free (subf);
+              FREE (subf);
               continue;
             }
           subclass = dwg_dynapi_subclass_name (fp1->type);
           if (!subclass)
             {
-              free (subf);
+              FREE (subf);
               continue;
             }
           fp = dwg_dynapi_subclass_field (subclass, key);
           if (!fp)
             {
-              free (subclass);
-              free (subf);
+              FREE (subclass);
+              FREE (subf);
               continue;
             }
           // embedded or reference?
@@ -467,8 +467,8 @@ test_object (const Dwg_Data *restrict dwg, const Dwg_Object *restrict obj,
             }
           if (ptr)
             test_subclass (dwg, ptr, f, fp, subclass, subf, key, sub_i);
-          free (subclass);
-          free (subf);
+          FREE (subclass);
+          FREE (subf);
           continue;
         }
       else
@@ -537,7 +537,7 @@ test_object (const Dwg_Data *restrict dwg, const Dwg_Object *restrict obj,
                         field.type, field.dxf);
               }
             if (isnew)
-              free (value);
+              FREE (value);
           }
           break;
         case DWG_VT_POINT3D:
@@ -882,7 +882,7 @@ main (int argc, char *argv[])
       const char *dxffile = dxf->dxf;
       struct stat attrib;
       int len = strlen (dxffile);
-      char *dwgfile = strdup (dxffile);
+      char *dwgfile = STRDUP (dxffile);
       char *s = strrchr (dwgfile, '.');
       *(s+2) = 'w';
       *(s+3) = 'g';
@@ -892,7 +892,7 @@ main (int argc, char *argv[])
         g_counter = 0;
       if (!big && strstr (dxffile, "/test-big/"))
         {
-          free (dwgfile);
+          FREE (dwgfile);
           continue;
         }
 
@@ -907,7 +907,7 @@ main (int argc, char *argv[])
               entity_alias (name);
               if (!is_dwg_entity (name) && !class)
                 {
-                  free (dwgfile);
+                  FREE (dwgfile);
                   if (!g_counter) // use --enable-debug
                     LOG_WARN ("Unhandled %s", dxf->name)
                   continue;
@@ -916,19 +916,19 @@ main (int argc, char *argv[])
         }
       if (class && strNE (class, name))
         {
-          free (dwgfile);
+          FREE (dwgfile);
           continue;
         }
       if (file && strNE (file, dwgfile))
         {
-          free (dwgfile);
+          FREE (dwgfile);
           continue;
         }
       // GH #268. skip 2018/Helix.dwg. podman works fine.
       if (is_docker && strEQ (dxffile, "test/test-data/2018/Helix.dxf"))
         {
           LOG_ERROR ("Skip %s in docker", dwgfile)
-          free (dwgfile);
+          FREE (dwgfile);
           continue;
         }
       if (stat (dwgfile, &attrib)) // not found
@@ -953,7 +953,7 @@ main (int argc, char *argv[])
         }
       else
         error += test_dxf (dxf, name, dwgfile);
-      free (dwgfile);
+      FREE (dwgfile);
     }
   // so far all unknown objects are debugging or unstable. ignore all errors
   return 0;

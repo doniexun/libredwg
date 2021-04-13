@@ -281,7 +281,7 @@ bit_read_RD_tests (void)
   double result;
 
   bitprepare (&bitchain, sizeof (double));
-  free (bitchain.chain);
+  FREE (bitchain.chain);
   bitchain.chain = (unsigned char *)&value;
   // bit_print (&bitchain, sizeof (double));
 
@@ -359,7 +359,7 @@ main (int argc, char const *argv[])
   bitchain.opts = 1;
   bitchain.fh = NULL;
   bitchain.version = bitchain.from_version = R_2000;
-  bitchain.chain = (unsigned char *)calloc (bitchain.size, 1);
+  bitchain.chain = (unsigned char *)CALLOC (bitchain.size, 1);
 
   bit_write_RD (&bitchain, 0xBA43B7400);
   if (bitchain.byte == 8 && bitchain.bit == 0)
@@ -606,7 +606,7 @@ main (int argc, char const *argv[])
   else
     fail ("bit_read_TV");
   bit_set_position (&bitchain, pos);
-  free (str);
+  FREE (str);
   for (int i = 0; i < 6; i++)
     bit_write_B (&bitchain, 0); // padding for the T BS, to have aligned strings at 67
   pos = bit_position (&bitchain); // 526
@@ -632,7 +632,7 @@ main (int argc, char const *argv[])
     else
       fail ("bit_read_T => TU @%ld.%d", bitchain.byte, bitchain.bit);
     bit_set_position (&bitchain, pos);
-    free (wstr);
+    FREE (wstr);
 
     bit_write_T (&bitchain, (char*)exp); // convert to ASCII via embed
     if (bitchain.byte == 81 && bitchain.bit == 0)
@@ -650,7 +650,7 @@ main (int argc, char const *argv[])
     else
       fail ("bit_read_T => TV \"%s\" @%ld.%d", str, bitchain.byte, bitchain.bit);
     bitchain.from_version = bitchain.version = R_2004;
-    free (str);
+    FREE (str);
   }
 
   bit_write_L (&bitchain, 20);
@@ -692,8 +692,8 @@ main (int argc, char const *argv[])
       pass ();
     else
       fail ("bit_read_CMC %d (r2000)", color_read.index);
-    free (color_read.name);
-    free (color_read.book_name);
+    FREE (color_read.name);
+    FREE (color_read.book_name);
   }
 
   bit_advance_position (&bitchain, -size);
@@ -723,8 +723,8 @@ main (int argc, char const *argv[])
     else
       fail ("bit_read_CMC (%d,%x,%d) %s", color.index, color.rgb, color.flag,
             color.name);
-    free (color.name);
-    free (color.book_name);
+    FREE (color.name);
+    FREE (color.book_name);
   }
 
   bitchain.byte++;
@@ -781,9 +781,9 @@ main (int argc, char const *argv[])
       }
     if (!fails)
       pass ();
-    free (s);
+    FREE (s);
   }
 
-  free (bitchain.chain);
+  FREE (bitchain.chain);
   return failed;
 }

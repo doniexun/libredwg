@@ -845,9 +845,9 @@ test_subdirs (const char *dir, int cov)
           error += test_code (dir, elem, cov);
         }
 
-      free (namelist[n]);
+      FREE (namelist[n]);
     }
-  free (namelist);
+  FREE (namelist);
 #endif
   return error;
 }
@@ -1060,7 +1060,7 @@ output_test (dwg_data *dwg)
           if (hdr_refs[j])
             output_BLOCK_HEADER (hdr_refs[j]);
         }
-      free (hdr_refs);
+      FREE (hdr_refs);
     }
 #endif
 }
@@ -1169,7 +1169,7 @@ print_api (dwg_object *obj)
           fail (#field ": %s " FORMAT_REF, _hdlname ? _hdlname : "",          \
                 ARGS_REF (field));                                            \
         if (version >= R_2007)                                                \
-          free (_hdlname);                                                    \
+          FREE (_hdlname);                                                    \
       }                                                                       \
   }
 
@@ -1211,7 +1211,7 @@ print_api (dwg_object *obj)
                 }                                                             \
             }                                                                 \
           if (_hdlname && version >= R_2007)                                  \
-            free (_hdlname);                                                  \
+            FREE (_hdlname);                                                  \
         }                                                                     \
     }
 
@@ -1325,7 +1325,7 @@ api_common_entity (dwg_object *obj)
 #define CHK_ENTITY_UTF8TEXT(ent, name, field)                                 \
   _CHK_ENTITY_UTF8TEXT (ent, name, field);                                    \
   if (isnew)                                                                  \
-    free (field)
+    FREE (field)
 
 #define CHK_ENTITY_TYPE(ent, name, field, typ)                                \
   if (!dwg_dynapi_entity_value (ent, #name, #field, &field, NULL))            \
@@ -1383,7 +1383,7 @@ api_common_entity (dwg_object *obj)
                   _hdlname ? _hdlname : "", ARGS_REF (field));                \
           }                                                                   \
         if (_version >= R_2007)                                               \
-          free (_hdlname);                                                    \
+          FREE (_hdlname);                                                    \
       }                                                                       \
   }
 
@@ -1424,7 +1424,7 @@ api_common_entity (dwg_object *obj)
                 }                                                             \
             }                                                                 \
           if (_hdlname && _version >= R_2007)                                 \
-            free (_hdlname);                                                  \
+            FREE (_hdlname);                                                  \
         }                                                                     \
     }
 
@@ -1562,10 +1562,10 @@ api_common_entity (dwg_object *obj)
         if (error || (old && strcmp (old, field)))                            \
           fail ("old API dwg_ent_" #ent "_get_" #field ": \"%s\"", old);      \
         if (_dwg_version >= R_2007)                                           \
-          free (old);                                                         \
+          FREE (old);                                                         \
       }                                                                       \
     if (isnew)                                                                \
-      free (field);                                                           \
+      FREE (field);                                                           \
   }
 #define CHK_ENTITY_UTF8TEXT_W_OBJ(ent, name, field)                           \
   _CHK_ENTITY_UTF8TEXT (ent, name, field);                                    \
@@ -1579,10 +1579,10 @@ api_common_entity (dwg_object *obj)
         else                                                                  \
           pass ();                                                            \
         if (_dwg_version >= R_2007)                                           \
-          free (old);                                                         \
+          FREE (old);                                                         \
       }                                                                       \
     if (isnew)                                                                \
-      free (field);                                                           \
+      FREE (field);                                                           \
   }
 #endif
 
@@ -1819,7 +1819,7 @@ api_common_entity (dwg_object *obj)
           fail (#name "." #field ":\t %s " FORMAT_REF, _hdlname ?: "",        \
                 ARGS_REF (_value));                                           \
         if (_hdlname && dwg_version >= R_2007)                                \
-          free (_hdlname);                                                    \
+          FREE (_hdlname);                                                    \
       }                                                                       \
   }
 #define CHK_SUBCLASS_HV(ptr, name, field, num)                                \

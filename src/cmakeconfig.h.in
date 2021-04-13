@@ -68,7 +68,7 @@
 /* Define if the system has the `gnu_format' function attribute */
 #define HAVE_FUNC_ATTRIBUTE_GNU_FORMAT 1
 
-/* Define if the system has the `malloc' function attribute */
+/* Define if the system has the `MALLOC' function attribute */
 #define HAVE_FUNC_ATTRIBUTE_MALLOC 1
 
 /* Define if the system has the `ms_format' function attribute */
@@ -98,7 +98,7 @@
 /* Define if you have the <limits.h> header file. */
 #define HAVE_LIMITS_H 1
 
-/* Define if your system has a GNU libc compatible `malloc' function, and
+/* Define if your system has a GNU libc compatible `MALLOC' function, and
    to 0 otherwise. */
 #define HAVE_MALLOC 1
 
@@ -126,7 +126,7 @@
 /* If available, contains the Python version number currently in use. */
 /* #undef HAVE_PYTHON */
 
-/* Define if your system has a GNU libc compatible `realloc' function,
+/* Define if your system has a GNU libc compatible `REALLOC' function,
    and to 0 otherwise. */
 #define HAVE_REALLOC 1
 
@@ -269,7 +269,7 @@
 #  define USE_WRITE
 #endif   
 
-/* Needed for strdup */
+/* Needed for STRDUP */
 #define _POSIX_C_SOURCE 200809L
 
 /* Define for Solaris 2.5.1 so the uint32_t typedef from <sys/synch.h>,
@@ -282,7 +282,7 @@
    #define below would cause a syntax error. */
 /* #undef _UINT64_T */
 
-/* Needed for cygwin strdup */
+/* Needed for cygwin STRDUP */
 #define __XSI_VISIBLE 700
 
 /* Define to `__inline__' or `__inline' if that's what the C compiler
@@ -303,11 +303,11 @@
    such a type exists and the standard includes do not define it. */
 /* #undef int64_t */
 
-/* Define to rpl_malloc if the replacement function should be used. */
-/* #undef malloc */
+/* Define to rpl_MALLOC if the replacement function should be used. */
+/* #undef MALLOC */
 
-/* Define to rpl_realloc if the replacement function should be used. */
-/* #undef realloc */
+/* Define to rpl_REALLOC if the replacement function should be used. */
+/* #undef REALLOC */
 
 /* If restrict is broken with this compiler */
 #ifdef __cplusplus

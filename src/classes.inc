@@ -22,7 +22,7 @@
  */
 
 #ifndef ACTION
-# error ACTION define missing: decode, encode, dxf, indxf, print, free, ...
+# error ACTION define missing: decode, encode, dxf, indxf, print, FREE, ...
 #endif
 
 #define _XSTR(s) _STR(s)

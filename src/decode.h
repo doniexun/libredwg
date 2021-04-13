@@ -60,7 +60,7 @@ void bfr_read (void *restrict dst, BITCODE_RC *restrict *restrict src,
 void decrypt_R2004_header (BITCODE_RC *restrict dest,
                            const BITCODE_RC *restrict src, unsigned size);
 
-/* reused with free */
+/* reused with FREE */
 void dwg_free_xdata_resbuf (Dwg_Resbuf *restrict rbuf);
 
 /* reused with encode */

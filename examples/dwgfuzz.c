@@ -174,6 +174,7 @@ main (int argc, char *argv[])
 #endif
   } mode = INVALID;
 
+  GC_INIT();
   if (argc <= 1 || !*argv[1])
     return 1;
   if (strEQc (argv[1], "-dwg"))
@@ -283,7 +284,7 @@ main (int argc, char *argv[])
               out_dat.version = R_2000;
               if (dwg_encode (&dwg, &out_dat) >= DWG_ERR_CRITICAL)
                 exit (0);
-              free (out_dat.chain);
+              FREE (out_dat.chain);
             }
           break;
 #endif
@@ -298,7 +299,7 @@ main (int argc, char *argv[])
                 exit (0);
               if (dwg_decode (&out_dat, &dwg) >= DWG_ERR_CRITICAL)
                 exit (0);
-              free (out_dat.chain);
+              FREE (out_dat.chain);
             }
           break;
         case ADD:
@@ -333,7 +334,7 @@ main (int argc, char *argv[])
               out_dat.version = R_2000;
               if (dwg_encode (&dwg, &out_dat) >= DWG_ERR_CRITICAL)
                 exit (0);
-              free (out_dat.chain);
+              FREE (out_dat.chain);
             }
           break;
 #endif
@@ -345,7 +346,7 @@ main (int argc, char *argv[])
               bit_chain_set_version (&out_dat, &dat);
               if (dwg_write_dxf (&out_dat, &dwg) >= DWG_ERR_CRITICAL)
                 exit (0);
-              free (out_dat.chain);
+              FREE (out_dat.chain);
             }
           break;
         case DXFB:
@@ -355,7 +356,7 @@ main (int argc, char *argv[])
               bit_chain_set_version (&out_dat, &dat);
               if (dwg_write_dxfb (&out_dat, &dwg) >= DWG_ERR_CRITICAL)
                 exit (0);
-              free (out_dat.chain);
+              FREE (out_dat.chain);
             }
           break;
 #endif
@@ -367,7 +368,7 @@ main (int argc, char *argv[])
               bit_chain_set_version (&out_dat, &dat);
               if (dwg_write_json (&out_dat, &dwg) >= DWG_ERR_CRITICAL)
                 exit (0);
-              free (out_dat.chain);
+              FREE (out_dat.chain);
             }
           break;
         case GEOJSON:
@@ -377,7 +378,7 @@ main (int argc, char *argv[])
               bit_chain_set_version (&out_dat, &dat);
               if (dwg_write_geojson (&out_dat, &dwg) >= DWG_ERR_CRITICAL)
                 exit (0);
-              free (out_dat.chain);
+              FREE (out_dat.chain);
             }
           break;
 #endif
@@ -403,7 +404,7 @@ static dwg_point_2d *scan_pts2d (unsigned num_pts, char **pp)
   p++;
   if (num_pts > 5000)
     exit (0);
-  pts = calloc (num_pts, 16);
+  pts = CALLOC (num_pts, 16);
   if (!pts)
     exit (0);
   for (unsigned i=0; i < num_pts; i++)
@@ -430,7 +431,7 @@ static dwg_point_2d *scan_pts2d (unsigned num_pts, char **pp)
     }
   else
     {
-      free (pts);
+      FREE (pts);
       return NULL;
     }
 }
@@ -446,7 +447,7 @@ static dwg_point_3d *scan_pts3d (unsigned num_pts, char **pp)
   p++;
   if (num_pts > 5000)
     exit (0);
-  pts = calloc (num_pts, 24);
+  pts = CALLOC (num_pts, 24);
   if (!pts)
     exit (0);
   for (unsigned i=0; i < num_pts; i++)
@@ -473,7 +474,7 @@ static dwg_point_3d *scan_pts3d (unsigned num_pts, char **pp)
     }
   else
     {
-      free (pts);
+      FREE (pts);
       return NULL;
     }
 }
@@ -672,7 +673,7 @@ int dwg_fuzz_dat (Dwg_Data **restrict dwgp, Bit_Chain *restrict dat)
           if (i1 && pts)
             {
               dwg_add_POLYLINE_2D (hdr, i1, pts);
-              free (pts);
+              FREE (pts);
             }
         }
       else if (SSCANF_S (p, "polyline_3d %d ((%lf %lf %lf)", &i1, &pt1.x, &pt1.y, &pt1.z))
@@ -681,7 +682,7 @@ int dwg_fuzz_dat (Dwg_Data **restrict dwgp, Bit_Chain *restrict dat)
           if (i1 && pts)
             {
               dwg_add_POLYLINE_3D (hdr, i1, pts);
-              free (pts);
+              FREE (pts);
             }
         }
       else if (SSCANF_S (p, "polyline_mesh %d %d ((%lf %lf %lf)", &i1, &i2, &pt1.x, &pt1.y, &pt1.z))
@@ -690,7 +691,7 @@ int dwg_fuzz_dat (Dwg_Data **restrict dwgp, Bit_Chain *restrict dat)
           if (i1 && i2 && pts)
             {
               dwg_add_POLYLINE_MESH (hdr, i1, i2, pts);
-              free (pts);
+              FREE (pts);
             }
         }
       else if (SSCANF_S (p, "dictionary " FMT_TBL " " FMT_TBL " %u", &text[0] SZ, &s1[0] SZ, &u))
@@ -714,7 +715,7 @@ int dwg_fuzz_dat (Dwg_Data **restrict dwgp, Bit_Chain *restrict dat)
             {
               dwg_add_SPLINE (hdr, i1, fitpts, &pt2, &pt3);
             }
-          free (fitpts);
+          FREE (fitpts);
         }
       else if (mtext && sscanf (p, "leader %d ((%lf %lf %lf)", &i1, &pt1.x, &pt1.y, &pt1.z))
         {
@@ -723,7 +724,7 @@ int dwg_fuzz_dat (Dwg_Data **restrict dwgp, Bit_Chain *restrict dat)
             {
               dwg_add_LEADER (hdr, i1, pts, mtext, i2);
             }
-          free (pts);
+          FREE (pts);
         }
       else if (SSCANF_S (p, "tolerance " FMT_TBL " (%lf %lf %lf) (%lf %lf %lf)",
                        &text[0] SZ, &pt1.x, &pt1.y, &pt1.z, &pt2.x, &pt2.y, &pt2.z))

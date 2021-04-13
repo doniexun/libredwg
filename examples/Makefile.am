@@ -20,6 +20,9 @@
 WARN_CFLAGS = @WARN_CFLAGS@
 AM_CFLAGS   = -I$(top_srcdir)/include -I$(top_srcdir)/src $(WARN_CFLAGS)
 LDADD       = $(top_builddir)/src/libredwg.la -lm
+if HAVE_LIBGC
+LDADD      += -lgc
+endif
 
 if USE_WRITE
 bin_PROGRAMS     = dwgadd
@@ -32,17 +35,16 @@ dwg2svg2_SOURCES = dwg2svg2.c
 dwgadd_SOURCES   = dwgadd.c
 unknown_SOURCES  = unknown.c
 # alldxf_0.inc alldxf_1.inc alldxf_2.inc alldwg.inc bd-unknown.inc
-unknown_LDADD    = $(top_builddir)/src/libredwg.la \
-                   $(top_builddir)/src/bits.lo $(top_builddir)/src/common.lo
+unknown_LDADD    = $(LDADD) $(top_builddir)/src/bits.lo $(top_builddir)/src/common.lo
 bd_SOURCE        = bd.c
-bd_LDADD         = $(top_builddir)/src/libredwg.la $(top_builddir)/src/bits.lo -lm
+bd_LDADD         = $(LDADD) $(top_builddir)/src/bits.lo
 bits_SOURCE      = bits.c
-bits_LDADD       = $(top_builddir)/src/libredwg.la $(top_builddir)/src/bits.lo -lm
+bits_LDADD       = $(LDADD) $(top_builddir)/src/bits.lo
 dwgfuzz_SOURCES  = dwgfuzz.c
 #would need HAVE_ASAN am var set
 #dwgfuzz_CFLAGS             = $(CFLAGS) $(AM_CFLAGS) -fsanitize=address,undefined -fno-omit-frame-pointer
 llvmfuzz_SOURCES            = llvmfuzz.c
-llvmfuzz_LDADD              = $(top_builddir)/src/libredwg.la $(top_builddir)/src/bits.lo -lm
+llvmfuzz_LDADD              = $(LDADD) $(top_builddir)/src/bits.lo
 llvmfuzz_standalone_SOURCES = llvmfuzz.c
 if HAVE_ASAN_OR_LINUX
 # needs CC=clang
@@ -58,7 +60,7 @@ endif
 else
 llvmfuzz_standalone_CFLAGS  = $(CFLAGS) $(AM_CFLAGS) -DSTANDALONE
 endif
-llvmfuzz_standalone_LDADD   = $(top_builddir)/src/libredwg.la $(top_builddir)/src/bits.lo -lm
+llvmfuzz_standalone_LDADD   = $(LDADD) $(top_builddir)/src/bits.lo
 
 all: $(check_PROGRAMS)
 

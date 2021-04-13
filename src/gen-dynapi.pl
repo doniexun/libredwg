@@ -1964,10 +1964,10 @@ while (<$in>) {
  * \fn Dwg_Entity_ENTITY* dwg_getall_ENTITY(Dwg_Object_Ref *hdr)
  * \code Usage: Dwg_Entity_TEXT* texts = dwg_getall_TEXT(text,
  * dwg->header_vars.mspace_block); \endcode \param[in]    hdr Dwg_Object_Ref *
- * to a BLOCK_CONTROL obj \return       malloced NULL-terminated array
+ * to a BLOCK_CONTROL obj \return       MALLOCed NULL-terminated array
  *
  * Extracts all entities of this type from a block header (mspace or pspace),
- * and returns a malloced NULL-terminated array.
+ * and returns a MALLOCed NULL-terminated array.
  */
 //< \fn Dwg_Entity_TEXT* dwg_getall_TEXT (Dwg_Object_Ref *hdr)
 EOF
@@ -1988,7 +1988,7 @@ EOF
 
 /**
  * \fn Dwg_Object_OBJECT dwg_getall_OBJECT(Dwg_Data *dwg)
- * Extracts all objects of this type from a dwg, and returns a malloced
+ * Extracts all objects of this type from a dwg, and returns a MALLOCed
  * NULL-terminated array.
  */
 
@@ -2166,7 +2166,7 @@ EOF
 
 /**
  * \fn Dwg_Object_OBJECT dwg_getall_OBJECT(Dwg_Data *dwg)
- * Extracts all objects of this type from a dwg, and returns a malloced
+ * Extracts all objects of this type from a dwg, and returns a MALLOCed
  * NULL-terminated array.
  */
 
@@ -3078,7 +3078,7 @@ dynapi_set_helper (void *restrict old, const Dwg_DYNAPI_field *restrict f,
   // TODO: sanity checks. is_malloc (TF)
   // if text strcpy or wcscpy, or do utf8 conversion.
   //if ((char*)old && f->is_malloc)
-  //  free (old);
+  //  FREE (old);
   if (f->is_malloc)
     {
       // NULL ptr
@@ -3087,7 +3087,7 @@ dynapi_set_helper (void *restrict old, const Dwg_DYNAPI_field *restrict f,
       // ascii
       else if (strEQc (f->type, "TF") || (f->is_string && dwg_version < R_2007))
         {
-          char *str = (char *)malloc (strlen (*(char**)value)+1);
+          char *str = (char *)MALLOC (strlen (*(char**)value)+1);
           strcpy (str, *(char**)value);
           memcpy (old, &str, sizeof (char*)); // size of ptr
         }
@@ -3100,14 +3100,14 @@ dynapi_set_helper (void *restrict old, const Dwg_DYNAPI_field *restrict f,
           else // source is already TU
             {
 #if defined(HAVE_WCHAR_H) && defined(SIZEOF_WCHAR_T) && SIZEOF_WCHAR_T == 2
-              wstr = (BITCODE_TU)malloc (2 * (wcslen (*(wchar_t **)value) + 1));
+              wstr = (BITCODE_TU)MALLOC (2 * (wcslen (*(wchar_t **)value) + 1));
               wcscpy ((wchar_t *)wstr, *(wchar_t **)value);
 #else
               int length = 0;
               for (; (*(BITCODE_TU*)value)[length]; length++)
                 ;
               length++;
-              wstr = (BITCODE_TU)malloc (2 * length);
+              wstr = (BITCODE_TU)MALLOC (2 * length);
               memcpy (wstr, value, length * 2);
 #endif
             }
@@ -3185,7 +3185,7 @@ dwg_dynapi_header_set_value (Dwg_Data *restrict dwg,
     if (f)
       {
         void *old;
-        // there are no malloc'd fields in the HEADER, so no need to free().
+        // there are no MALLOC'd fields in the HEADER, so no need to FREE().
         const Dwg_Header_Variables *const _obj = &dwg->header_vars;
 
         old = &((char*)_obj)[f->offset];
@@ -3462,41 +3462,41 @@ dwg_dynapi_subclass_name (const char *restrict type)
   if (memBEGINc (type, "Dwg_Object_"))
     {
       const int off = strlen ("Dwg_Object_"); // PLOTSETTINGS
-      name = strdup (&type[off]);
+      name = STRDUP (&type[off]);
       if (type[len - 1] == '*')
         name[len - off - 1] = '\0';
     }
   else if (memBEGINc (type, "Dwg_Entity_"))
     {
       const int off = strlen ("Dwg_Entity_");
-      name = strdup (&type[off]);
+      name = STRDUP (&type[off]);
       if (type[len - 1] == '*')
         name[len - off - 1] = '\0';
     }
   else if (memBEGINc (type, "Dwg_"))
     {
-      name = strdup (&type[4]);
+      name = STRDUP (&type[4]);
       if (type[len - 1] == '*')
         name[len - 5] = '\0';
     }
   else if (memBEGINc (type, "struct _dwg_entity_"))
     {
       const int off = strlen ("struct _dwg_entity_"); // TABLE
-      name = strdup (&type[off]);
+      name = STRDUP (&type[off]);
       if (type[len - 1] == '*')
         name[len - off - 1] = '\0';
     }
   else if (memBEGINc (type, "struct _dwg_object_"))
     {
       const int off = strlen ("struct _dwg_object_"); // CELLSTYLEMAP*, EVALUATION_GRAPH, ...
-      name = strdup (&type[off]);
+      name = STRDUP (&type[off]);
       if (type[len - 1] == '*')
         name[len - off - 1] = '\0';
     }
   else if (memBEGINc (type, "struct _dwg_")) // CellStyle*
     {
       const int off = strlen ("struct _dwg_");
-      name = strdup (&type[off]);
+      name = STRDUP (&type[off]);
       if (type[len - 1] == '*')
         name[len - off - 1] = '\0';
     }

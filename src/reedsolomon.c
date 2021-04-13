@@ -24,6 +24,7 @@
 #  include <malloc.h>
 #endif
 #include "logging.h"
+#include "common.h"
 #include "reedsolomon.h"
 
 #define debug(fmt, ...)                                                       \
@@ -181,7 +182,7 @@ f256_multiply (unsigned char a, unsigned char b)
 
 /*
  * Encode a block. Only the trailing 16 parity bytes are computed in
- * a buffer which caller preallocates.
+ * a buffer which caller pREALLOCates.
  */
 void
 rs_encode_block (unsigned char *parity, unsigned char *src, int count)
@@ -223,7 +224,7 @@ rs_decode_block (unsigned char *blk, int fix)
   unsigned char *synbuf, *sigma, *omega;
   int errflag = 0;
 
-  synbuf = (unsigned char *)malloc (POLY_LENGTH);
+  synbuf = (unsigned char *)MALLOC (POLY_LENGTH);
   memset (synbuf, 0, 16);
 
   for (j = 0; j < 16; j++)
@@ -236,7 +237,7 @@ rs_decode_block (unsigned char *blk, int fix)
   if (!errflag)
     {
       debug ("No error in Reed-Solomon block\n");
-      free (synbuf);
+      FREE (synbuf);
       return 0;
     }
 
@@ -245,22 +246,22 @@ rs_decode_block (unsigned char *blk, int fix)
 
   if (!fix)
     {
-      free (synbuf);
+      FREE (synbuf);
       return -1;
     }
 
-  sigma = (unsigned char *)malloc (POLY_LENGTH);
+  sigma = (unsigned char *)MALLOC (POLY_LENGTH);
   memset (sigma, 0, POLY_LENGTH);
 
-  omega = (unsigned char *)malloc (POLY_LENGTH);
+  omega = (unsigned char *)MALLOC (POLY_LENGTH);
   memset (omega, 0, POLY_LENGTH);
 
   solve_key_equation (synbuf, sigma, omega);
   i = fix_errors (blk, sigma, omega);
 
-  free (sigma);
-  free (omega);
-  free (synbuf);
+  FREE (sigma);
+  FREE (omega);
+  FREE (synbuf);
   if (i < 0)
     debug ("Errors in Reed-Solomon block are not recoverable\n");
   else
@@ -316,13 +317,13 @@ initialize_matrix (unsigned char *s)
   PolyMatrix matrix;
   int i, j;
 
-  matrix = (PolyMatrix)calloc (2, sizeof (PolyRow));
+  matrix = (PolyMatrix)CALLOC (2, sizeof (PolyRow));
   for (i = 0; i < 2; i++)
     {
-      matrix[i] = (PolyRow)calloc (3, sizeof (Poly));
+      matrix[i] = (PolyRow)CALLOC (3, sizeof (Poly));
       for (j = 0; j < 3; j++)
         {
-          matrix[i][j] = (Poly)calloc (1, POLY_LENGTH);
+          matrix[i][j] = (Poly)CALLOC (1, POLY_LENGTH);
         }
     }
 
@@ -345,9 +346,9 @@ free_matrix (PolyMatrix matrix)
     {
       for (j = 0; j < 2; j++)
         {
-          free (matrix[i][j]);
+          FREE (matrix[i][j]);
         }
-      free (matrix[i]);
+      FREE (matrix[i]);
     }
 }
 

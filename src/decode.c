@@ -22,7 +22,7 @@
 
 #include "config.h"
 #ifdef __STDC_ALLOC_LIB__
-#  define __STDC_WANT_LIB_EXT2__ 1 /* for strdup */
+#  define __STDC_WANT_LIB_EXT2__ 1 /* for STRDUP */
 #else
 #  define _USE_BSD 1
 #endif
@@ -332,7 +332,7 @@ decode_preR13_section (Dwg_Section_Type_r11 id, Bit_Chain *restrict dat,
       return DWG_ERR_INVALIDDWG;
     }
   if (dwg->num_objects % REFS_PER_REALLOC == 0)
-    dwg->object = (Dwg_Object*)realloc (dwg->object, old_size + size + REFS_PER_REALLOC);
+    dwg->object = (Dwg_Object*)REALLOC (dwg->object, old_size + size + REFS_PER_REALLOC);
 
     // TODO: move to a spec dwg_r11.spec, and dwg_decode_r11_NAME
 #define PREP_TABLE(token)                                                     \
@@ -341,13 +341,12 @@ decode_preR13_section (Dwg_Section_Type_r11 id, Bit_Chain *restrict dat,
   if (dat->byte > dat->size || (num + i) >= dwg->num_objects)                 \
     return DWG_ERR_INVALIDDWG;                                                \
   obj = &dwg->object[num + i];                                                \
-  _obj = (Dwg_Object_##token *)calloc (1, sizeof (Dwg_Object_##token));       \
+  _obj = (Dwg_Object_##token *)CALLOC (1, sizeof (Dwg_Object_##token));       \
   obj->tio.object                                                             \
-      = (Dwg_Object_Object *)calloc (1, sizeof (Dwg_Object_Object));          \
+      = (Dwg_Object_Object *)CALLOC (1, sizeof (Dwg_Object_Object));          \
   if (!_obj || !obj->tio.object)                                              \
     {                                                                         \
-      if (_obj)                                                               \
-        free (_obj);                                                          \
+      FREE_IF (_obj);                                                         \
       return DWG_ERR_OUTOFMEM;                                                \
     }                                                                         \
   obj->index = num + i;                                                       \
@@ -675,7 +674,7 @@ decode_preR13 (Bit_Chain *restrict dat, Dwg_Data *restrict dwg)
 
   // 10 tables + header + block
   dwg->header.num_sections = 12;
-  dwg->header.section = (Dwg_Section *)calloc (
+  dwg->header.section = (Dwg_Section *)CALLOC (
       1, sizeof (Dwg_Section) * dwg->header.num_sections);
   if (!dwg->header.section)
     {
@@ -912,7 +911,7 @@ decode_R13_R2000 (Bit_Chain *restrict dat, Dwg_Data *restrict dwg)
     }
 
   // So far seen 3-6 sections. Most emit only 3-5 sections.
-  dwg->header.section = (Dwg_Section *)calloc (
+  dwg->header.section = (Dwg_Section *)CALLOC (
       1, sizeof (Dwg_Section) * dwg->header.num_sections);
   if (!dwg->header.section)
     {
@@ -1025,7 +1024,7 @@ decode_R13_R2000 (Bit_Chain *restrict dat, Dwg_Data *restrict dwg)
               assert ((dat->byte - 16) >= start_address);
               dwg->thumbnail.size = (dat->byte - 16) - start_address;
               dwg->thumbnail.chain
-                = (unsigned char *)calloc (dwg->thumbnail.size, 1);
+                = (unsigned char *)CALLOC (dwg->thumbnail.size, 1);
               dwg->thumbnail.byte = 0;
               if (!dwg->thumbnail.chain)
                 {
@@ -1170,9 +1169,9 @@ classes_section:
 
       i = dwg->num_classes;
       if (i == 0)
-        dwg->dwg_class = (Dwg_Class *)malloc (sizeof (Dwg_Class));
+        dwg->dwg_class = (Dwg_Class *)MALLOC (sizeof (Dwg_Class));
       else
-        dwg->dwg_class = (Dwg_Class *)realloc (dwg->dwg_class,
+        dwg->dwg_class = (Dwg_Class *)REALLOC (dwg->dwg_class,
                                                (i + 1) * sizeof (Dwg_Class));
       if (!dwg->dwg_class)
         {
@@ -1191,7 +1190,7 @@ classes_section:
       LOG_HANDLE ("appname: %s [TV] ", klass->appname); LOG_POS;
       if (dat->byte >= endpos)
         {
-          free (klass->appname);
+          FREE (klass->appname);
           break;
         }
       LOG_HANDLE ("\n  ");
@@ -1444,7 +1443,7 @@ handles_section:
           LOG_WARN ("Only %d num_sections, but 2ndheader found, extending to 4",
                     dwg->header.num_sections);
           dwg->header.num_sections = SECTION_2NDHEADER_R13 + 1; /* 4 */
-          dwg->header.section = (Dwg_Section *)realloc (
+          dwg->header.section = (Dwg_Section *)REALLOC (
               dwg->header.section,
               dwg->header.num_sections * sizeof (Dwg_Section));
           memset (&dwg->header.section[SECTION_2NDHEADER_R13], 0,
@@ -1878,11 +1877,11 @@ add_section (Dwg_Data *dwg)
 {
   if (dwg->header.num_sections == 0)
     {
-      dwg->header.section = (Dwg_Section*)calloc (1, sizeof (Dwg_Section));
+      dwg->header.section = (Dwg_Section*)CALLOC (1, sizeof (Dwg_Section));
     }
   else
     {
-      dwg->header.section = (Dwg_Section *)realloc (
+      dwg->header.section = (Dwg_Section *)REALLOC (
           dwg->header.section,
           sizeof (Dwg_Section) * (dwg->header.num_sections + 1));
       memset (&dwg->header.section[dwg->header.num_sections], 0,
@@ -1956,7 +1955,7 @@ read_R2004_section_map (Bit_Chain *restrict dat, Dwg_Data *restrict dwg)
       dwg->r2004_header.decomp_data_size = 8 * comp_data_size;
       return DWG_ERR_OUTOFMEM;
     }
-  decomp = (BITCODE_RC *)calloc (decomp_data_size + 1024, sizeof (BITCODE_RC));
+  decomp = (BITCODE_RC *)CALLOC (decomp_data_size + 1024, sizeof (BITCODE_RC));
   if (!decomp)
     {
       LOG_ERROR ("Out of memory");
@@ -1968,7 +1967,7 @@ read_R2004_section_map (Bit_Chain *restrict dat, Dwg_Data *restrict dwg)
                                     comp_data_size);
   if (error > DWG_ERR_CRITICAL || error == DWG_ERR_VALUEOUTOFBOUNDS)
     {
-      free (decomp);
+      FREE (decomp);
       return error;
     }
   LOG_TRACE ("\n#### Read 2004 Section Page Map @%x ####\n", (unsigned)section_map_address)
@@ -2040,7 +2039,7 @@ read_R2004_section_map (Bit_Chain *restrict dat, Dwg_Data *restrict dwg)
       i++;
     }
   i--;
-  free (decomp);
+  FREE (decomp);
 
   if (max_id != (int32_t)section_array_size)
     {
@@ -2180,7 +2179,7 @@ read_R2004_section_info (Bit_Chain *restrict dat, Dwg_Data *restrict dwg,
       LOG_ERROR ("Invalid r2004_header.decomp_data_size %" PRIu32, decomp_data_size)
       return DWG_ERR_OUTOFMEM;
     }
-  decomp = (BITCODE_RC *)calloc (decomp_data_size + 1024, sizeof (BITCODE_RC));
+  decomp = (BITCODE_RC *)CALLOC (decomp_data_size + 1024, sizeof (BITCODE_RC));
   if (!decomp)
     {
       LOG_ERROR ("Out of memory");
@@ -2191,7 +2190,7 @@ read_R2004_section_info (Bit_Chain *restrict dat, Dwg_Data *restrict dwg,
                                     comp_data_size);
   if (error > DWG_ERR_CRITICAL || error == DWG_ERR_VALUEOUTOFBOUNDS)
     {
-      free (decomp);
+      FREE (decomp);
       return error;
     }
 
@@ -2207,12 +2206,12 @@ read_R2004_section_info (Bit_Chain *restrict dat, Dwg_Data *restrict dwg,
   if (dwg->header.section_infohdr.num_desc > 0x2f00000)
     {
       LOG_ERROR ("Illegal num_desc2");
-      free (decomp);
+      FREE (decomp);
       dwg->header.section_infohdr.num_desc = 0;
       dwg->header.section_infohdr.num_desc2 = 0;
       return error | DWG_ERR_INVALIDDWG;
     }
-  dwg->header.section_info = (Dwg_Section_Info *)calloc (
+  dwg->header.section_info = (Dwg_Section_Info *)CALLOC (
       dwg->header.section_infohdr.num_desc, sizeof (Dwg_Section_Info));
   if (!dwg->header.section_info)
     {
@@ -2229,7 +2228,7 @@ read_R2004_section_info (Bit_Chain *restrict dat, Dwg_Data *restrict dwg,
 
       if (ptr + 32 + 64 >= decomp_end)
         {
-          free (decomp);
+          FREE (decomp);
           dwg->header.section_infohdr.num_desc = i;
           LOG_ERROR ("read_R2004_section_info out of range");
           return DWG_ERR_INVALIDDWG;
@@ -2258,7 +2257,7 @@ read_R2004_section_info (Bit_Chain *restrict dat, Dwg_Data *restrict dwg,
           info->num_sections = 0;
           info->sections = NULL;
           dwg->header.section_infohdr.num_desc = i;
-          free (decomp);
+          FREE (decomp);
           LOG_ERROR ("read_R2004_section_info out of range");
           return DWG_ERR_INVALIDDWG;
         }
@@ -2300,10 +2299,10 @@ read_R2004_section_info (Bit_Chain *restrict dat, Dwg_Data *restrict dwg,
               error |= DWG_ERR_VALUEOUTOFBOUNDS;
             }
           LOG_INFO ("Page count %u in area %d\n", info->num_sections, i);
-          info->sections = (Dwg_Section **)calloc (info->num_sections, sizeof (Dwg_Section *));
+          info->sections = (Dwg_Section **)CALLOC (info->num_sections, sizeof (Dwg_Section *));
           if (!info->sections)
             {
-              free (decomp);
+              FREE (decomp);
               LOG_ERROR ("Out of memory with %u sections", info->num_sections);
               return error | DWG_ERR_OUTOFMEM;
             }
@@ -2350,7 +2349,7 @@ read_R2004_section_info (Bit_Chain *restrict dat, Dwg_Data *restrict dwg,
                 { // gap/unused data
                   LOG_TRACE ("Page: %4" PRId32 " (-)", page.number)
                   info->num_sections++;
-                  info->sections = (Dwg_Section **)realloc (
+                  info->sections = (Dwg_Section **)REALLOC (
                       info->sections,
                       info->num_sections * sizeof (Dwg_Section *));
                   info->sections[info->num_sections - 1] = NULL;
@@ -2396,11 +2395,11 @@ read_R2004_section_info (Bit_Chain *restrict dat, Dwg_Data *restrict dwg,
           LOG_ERROR ("Section count %u in area %d too high! Skipping",
                      info->num_sections, i);
           info->num_sections = 0;
-          free (decomp);
+          FREE (decomp);
           return error | DWG_ERR_VALUEOUTOFBOUNDS;
         }
     }
-  free (decomp);
+  FREE (decomp);
   return error;
 }
 
@@ -2474,16 +2473,15 @@ read_2004_compressed_section (Bit_Chain *dat, Dwg_Data *restrict dwg,
       /*
       else if (type == SECTION_UNKNOWN)
         {
-          Dwg_Section *sec = calloc (1, sizeof (Dwg_Section));
+          Dwg_Section *sec = CALLOC (1, sizeof (Dwg_Section));
           info->num_sections = 1; // hidden. enable it
           info->size = 128;
           sec->type = SECTION_UNKNOWN;
           sec->compression_type = info->compressed;
           sec->address = 128;
           sec->size = 128;
-          if (info->sections) // [0] is NULL anyway
-            free (info->sections);
-          info->sections = calloc (1, sizeof (Dwg_Section*));
+          FREE_IF (info->sections);
+          info->sections = CALLOC (1, sizeof (Dwg_Section*));
           info->sections[0] = sec;
         }
       */
@@ -2510,7 +2508,7 @@ read_2004_compressed_section (Bit_Chain *dat, Dwg_Data *restrict dwg,
       return DWG_ERR_VALUEOUTOFBOUNDS;
     }
   LOG_HANDLE ("Alloc section %s size %" PRIu32 "\n", info->name, max_decomp_size);
-  decomp = (BITCODE_RC *)calloc (max_decomp_size, sizeof (BITCODE_RC));
+  decomp = (BITCODE_RC *)CALLOC (max_decomp_size, sizeof (BITCODE_RC));
   if (!decomp)
     {
       LOG_ERROR ("Out of memory with " FORMAT_RL " sections of size: " FORMAT_RL,
@@ -2534,7 +2532,7 @@ read_2004_compressed_section (Bit_Chain *dat, Dwg_Data *restrict dwg,
           if (i == info->num_sections - 1) // the last one
             {
               sec_dat->chain = NULL; // fix double-free
-              free (decomp);
+              FREE (decomp);
               return DWG_ERR_SECTIONNOTFOUND;
             }
           j--; // index for writing info->max_decomp_size chunks
@@ -2594,7 +2592,7 @@ read_2004_compressed_section (Bit_Chain *dat, Dwg_Data *restrict dwg,
           if (error > DWG_ERR_CRITICAL)
             {
               sec_dat->chain = NULL; // fix double-free
-              free (decomp);
+              FREE (decomp);
               return error;
             }
           bytes_left -= info->max_decomp_size;
@@ -2612,7 +2610,7 @@ read_2004_compressed_section (Bit_Chain *dat, Dwg_Data *restrict dwg,
             {
               LOG_ERROR ("Some section size or address out of bounds")
               sec_dat->chain = NULL;
-              free (decomp);
+              FREE (decomp);
               return type < SECTION_REVHISTORY ? DWG_ERR_INVALIDDWG
                                                : DWG_ERR_VALUEOUTOFBOUNDS;
             }
@@ -2643,8 +2641,7 @@ read_2004_section_classes (Bit_Chain *restrict dat, Dwg_Data *restrict dwg)
   if (error >= DWG_ERR_CRITICAL || !sec_dat.chain)
     {
       LOG_ERROR ("Failed to read compressed %s section", "Classes");
-      if (sec_dat.chain)
-        free (sec_dat.chain);
+      FREE_IF (sec_dat.chain);
       return error;
     }
 
@@ -2685,8 +2682,7 @@ read_2004_section_classes (Bit_Chain *restrict dat, Dwg_Data *restrict dwg)
         {
           LOG_ERROR ("Invalid max class number %d", max_num)
           dwg->num_classes = 0;
-          if (sec_dat.chain)
-            free (sec_dat.chain);
+          FREE_IF (sec_dat.chain);
           return DWG_ERR_VALUEOUTOFBOUNDS;
         }
       assert (max_num >= 500);
@@ -2696,12 +2692,11 @@ read_2004_section_classes (Bit_Chain *restrict dat, Dwg_Data *restrict dwg)
         section_string_stream (dwg, &sec_dat, bitsize, &str_dat);
 
       dwg->dwg_class
-          = (Dwg_Class *)calloc (dwg->num_classes, sizeof (Dwg_Class));
+          = (Dwg_Class *)CALLOC (dwg->num_classes, sizeof (Dwg_Class));
       if (!dwg->dwg_class)
         {
           LOG_ERROR ("Out of memory");
-          if (sec_dat.chain)
-            free (sec_dat.chain);
+          FREE_IF (sec_dat.chain);
           return DWG_ERR_OUTOFMEM;
         }
 
@@ -2726,7 +2721,7 @@ read_2004_section_classes (Bit_Chain *restrict dat, Dwg_Data *restrict dwg)
                   //LOG_TRACE_TU ("Application name", dwg->dwg_class[i].appname, 0)
                   LOG_TRACE_TU ("C++ class name  ", dwg->dwg_class[i].cppname, 0)
                   LOG_TRACE_TU ("DXF record name ", dwg->dwg_class[i].dxfname_u, 0)
-                  free (appu8);
+                  FREE (appu8);
                 }
             }
           else
@@ -2764,7 +2759,7 @@ read_2004_section_classes (Bit_Chain *restrict dat, Dwg_Data *restrict dwg)
   else
     {
       LOG_ERROR ("Failed to find class section sentinel");
-      free (sec_dat.chain);
+      FREE_IF (sec_dat.chain);
       return DWG_ERR_CLASSESNOTFOUND;
     }
 
@@ -2772,7 +2767,7 @@ read_2004_section_classes (Bit_Chain *restrict dat, Dwg_Data *restrict dwg)
   // dwg_sentinel(DWG_SENTINEL_CLASS_END)
   // SINCE(R_2004) 8 unknown bytes
 
-  free (sec_dat.chain);
+  FREE (sec_dat.chain);
   return 0;
 }
 
@@ -2789,8 +2784,7 @@ read_2004_section_header (Bit_Chain *restrict dat, Dwg_Data *restrict dwg)
   if (error >= DWG_ERR_CRITICAL || !sec_dat.chain)
     {
       LOG_ERROR ("Failed to read compressed %s section", "Header");
-      if (sec_dat.chain)
-        free (sec_dat.chain);
+      FREE_IF (sec_dat.chain);
       return error;
     }
 
@@ -2826,7 +2820,7 @@ read_2004_section_header (Bit_Chain *restrict dat, Dwg_Data *restrict dwg)
                                               dwg);
       }
     }
-  free (sec_dat.chain);
+  FREE (sec_dat.chain);
   return error;
 }
 
@@ -2846,7 +2840,7 @@ read_2004_section_handles (Bit_Chain *restrict dat, Dwg_Data *restrict dwg)
     {
       LOG_ERROR ("Failed to read compressed %s section", "AcDbObjects");
       if (obj_dat.chain)
-        free (obj_dat.chain);
+        FREE (obj_dat.chain);
       return error;
     }
 
@@ -2854,9 +2848,9 @@ read_2004_section_handles (Bit_Chain *restrict dat, Dwg_Data *restrict dwg)
   if (error >= DWG_ERR_CRITICAL || !hdl_dat.chain)
     {
       LOG_ERROR ("Failed to read compressed %s section", "Handles");
-      free (obj_dat.chain);
+      FREE (obj_dat.chain);
       if (hdl_dat.chain)
-        free (hdl_dat.chain);
+        FREE (hdl_dat.chain);
       return error;
     }
 
@@ -2881,9 +2875,9 @@ read_2004_section_handles (Bit_Chain *restrict dat, Dwg_Data *restrict dwg)
         {
           LOG_ERROR ("Object-map/handles page size greater than 2040!");
           if (hdl_dat.chain)
-            free (hdl_dat.chain);
+            FREE (hdl_dat.chain);
           if (obj_dat.chain)
-            free (obj_dat.chain);
+            FREE (obj_dat.chain);
           return DWG_ERR_VALUEOUTOFBOUNDS;
         }
 
@@ -2963,8 +2957,8 @@ read_2004_section_handles (Bit_Chain *restrict dat, Dwg_Data *restrict dwg)
     }
   while (section_size > 2);
 
-  free (hdl_dat.chain);
-  free (obj_dat.chain);
+  FREE (hdl_dat.chain);
+  FREE (obj_dat.chain);
   return error;
 }
 
@@ -2996,8 +2990,7 @@ read_2004_section_summary (Bit_Chain *restrict dat, Dwg_Data *restrict dwg)
   if (error >= DWG_ERR_CRITICAL || !sec_dat.chain)
     {
       LOG_ERROR ("Failed to read uncompressed %s section", "SummaryInfo");
-      if (sec_dat.chain)
-        free (sec_dat.chain);
+      FREE_IF (sec_dat.chain);
       return error;
     }
   if (dwg->header.summaryinfo_address != (BITCODE_RL)dat->byte)
@@ -3010,13 +3003,12 @@ read_2004_section_summary (Bit_Chain *restrict dat, Dwg_Data *restrict dwg)
 
   error = summaryinfo_private (dat, dwg);
 
-  if (sec_dat.chain)
-    free (sec_dat.chain);
+  FREE_IF (sec_dat.chain);
   *dat = old_dat; // unrestrict
   return error;
 }
 
-// may return OUTOFBOUNDS, needs to free the chain then
+// may return OUTOFBOUNDS, needs to FREE the chain then
 static int
 auxheader_private (Bit_Chain *restrict dat, Dwg_Data *restrict dwg)
 {
@@ -3047,8 +3039,7 @@ read_2004_section_auxheader (Bit_Chain *restrict dat, Dwg_Data *restrict dwg)
   if (error >= DWG_ERR_CRITICAL || !sec_dat.chain)
     {
       LOG_ERROR ("Failed to read uncompressed %s section", "AuxHeader");
-      if (sec_dat.chain)
-        free (sec_dat.chain);
+      FREE_IF (sec_dat.chain);
       return error;
     }
 
@@ -3060,13 +3051,12 @@ read_2004_section_auxheader (Bit_Chain *restrict dat, Dwg_Data *restrict dwg)
   error = auxheader_private (dat, dwg);
 
   LOG_TRACE ("\n")
-  if (sec_dat.chain)
-    free (sec_dat.chain);
+  FREE_IF (sec_dat.chain);
   *dat = old_dat; // unrestrict
   return error;
 }
 
-// may return OUTOFBOUNDS, needs to free the chain then
+// may return OUTOFBOUNDS, needs to FREE the chain then
 static int
 appinfo_private (Bit_Chain *restrict dat, Dwg_Data *restrict dwg)
 {
@@ -3103,8 +3093,7 @@ read_2004_section_appinfo (Bit_Chain *restrict dat, Dwg_Data *restrict dwg)
   if (error >= DWG_ERR_CRITICAL || !sec_dat.chain)
     {
       LOG_ERROR ("Failed to read uncompressed %s section", "AppInfo");
-      if (sec_dat.chain)
-        free (sec_dat.chain);
+      FREE_IF (sec_dat.chain);
       return error;
     }
 
@@ -3116,8 +3105,7 @@ read_2004_section_appinfo (Bit_Chain *restrict dat, Dwg_Data *restrict dwg)
   error = appinfo_private (dat, dwg);
 
   LOG_TRACE ("\n")
-  if (sec_dat.chain)
-    free (sec_dat.chain);
+  FREE_IF (sec_dat.chain);
   *dat = old_dat; // unrestrict
   return error;
 }
@@ -3150,8 +3138,7 @@ read_2004_section_filedeplist (Bit_Chain *restrict dat, Dwg_Data *restrict dwg)
   if (error >= DWG_ERR_CRITICAL || !sec_dat.chain)
     {
       LOG_INFO ("%s section not found\n", "FileDepList");
-      if (sec_dat.chain)
-        free (sec_dat.chain);
+      FREE_IF (sec_dat.chain);
       return 0;
     }
 
@@ -3163,8 +3150,7 @@ read_2004_section_filedeplist (Bit_Chain *restrict dat, Dwg_Data *restrict dwg)
   error = filedeplist_private (dat, dwg);
 
   LOG_TRACE ("\n")
-  if (sec_dat.chain)
-    free (sec_dat.chain);
+  FREE_IF (sec_dat.chain);
   *dat = old_dat; // unrestrict
   return error;
 }
@@ -3198,8 +3184,7 @@ read_2004_section_security (Bit_Chain *restrict dat, Dwg_Data *restrict dwg)
   if (error >= DWG_ERR_CRITICAL || !sec_dat.chain)
     {
       LOG_INFO ("%s section not found\n", "Security");
-      if (sec_dat.chain)
-        free (sec_dat.chain);
+      FREE_IF (sec_dat.chain);
       return 0;
     }
 
@@ -3211,8 +3196,7 @@ read_2004_section_security (Bit_Chain *restrict dat, Dwg_Data *restrict dwg)
   error = security_private (dat, dwg);
 
   LOG_TRACE ("\n")
-  if (sec_dat.chain)
-    free (sec_dat.chain);
+  FREE_IF (sec_dat.chain);
   *dat = old_dat; // unrestrict
   return error;
 }
@@ -3244,8 +3228,7 @@ read_2004_section_signature (Bit_Chain *restrict dat, Dwg_Data *restrict dwg)
   if (error >= DWG_ERR_CRITICAL || !sec_dat.chain)
     {
       LOG_INFO ("%s section not found\n", secname)
-      if (sec_dat.chain)
-        free (sec_dat.chain);
+      FREE_IF (sec_dat.chain);
       return 0;
     }
 
@@ -3257,8 +3240,7 @@ read_2004_section_signature (Bit_Chain *restrict dat, Dwg_Data *restrict dwg)
   error |= signature_private (dat, dwg);
 
   LOG_TRACE ("\n")
-  if (sec_dat.chain)
-    free (sec_dat.chain);
+  FREE_IF (sec_dat.chain);
   *dat = old_dat; // unrestrict
   return error;
 }
@@ -3282,8 +3264,7 @@ read_2004_section_vbaproject (Bit_Chain *restrict dat, Dwg_Data *restrict dwg)
   if (error >= DWG_ERR_CRITICAL || !sec_dat.chain)
     {
       LOG_INFO ("%s section not found\n", "VBAProject");
-      if (sec_dat.chain)
-        free (sec_dat.chain);
+      FREE_IF (sec_dat.chain);
       return 0;
     }
 
@@ -3299,8 +3280,7 @@ read_2004_section_vbaproject (Bit_Chain *restrict dat, Dwg_Data *restrict dwg)
   LOG_TRACE_TF (_obj->unknown_bits, _obj->size)
 
   LOG_TRACE ("\n")
-  if (sec_dat.chain)
-    free (sec_dat.chain);
+  FREE_IF (sec_dat.chain);
   *dat = old_dat; // unrestrict
   return error;
 }
@@ -3318,8 +3298,7 @@ read_2004_section_appinfohistory (Bit_Chain *restrict dat, Dwg_Data *restrict dw
   if (error >= DWG_ERR_CRITICAL || !sec_dat.chain)
     {
       LOG_INFO ("%s section not found\n", "AppInfoHistory");
-      if (sec_dat.chain)
-        free (sec_dat.chain);
+      FREE_IF (sec_dat.chain);
       return 0;
     }
 
@@ -3334,8 +3313,7 @@ read_2004_section_appinfohistory (Bit_Chain *restrict dat, Dwg_Data *restrict dw
   LOG_TRACE_TF (_obj->unknown_bits, _obj->size)
 
   LOG_TRACE ("\n")
-  if (sec_dat.chain)
-    free (sec_dat.chain);
+  FREE_IF (sec_dat.chain);
   *dat = old_dat; // unrestrict
   return error;
 }
@@ -3369,8 +3347,7 @@ read_2004_section_revhistory (Bit_Chain *restrict dat, Dwg_Data *restrict dwg)
   if (error >= DWG_ERR_CRITICAL || !sec_dat.chain)
     {
       LOG_INFO ("%s section not found\n", "RevHistory");
-      if (sec_dat.chain)
-        free (sec_dat.chain);
+      FREE_IF (sec_dat.chain);
       return 0;
     }
 
@@ -3382,8 +3359,7 @@ read_2004_section_revhistory (Bit_Chain *restrict dat, Dwg_Data *restrict dwg)
   error = revhistory_private (dat, dwg);
 
   LOG_TRACE ("\n")
-  if (sec_dat.chain)
-    free (sec_dat.chain);
+  FREE_IF (sec_dat.chain);
   *dat = old_dat; // unrestrict
   return error;
 }
@@ -3402,8 +3378,7 @@ read_2004_section_objfreespace (Bit_Chain *restrict dat, Dwg_Data *restrict dwg)
   if (error >= DWG_ERR_CRITICAL || !sec_dat.chain)
     {
       LOG_INFO ("%s section not found\n", "ObjFreeSpace");
-      if (sec_dat.chain)
-        free (sec_dat.chain);
+      FREE_IF (sec_dat.chain);
       return 0;
     }
 
@@ -3417,8 +3392,7 @@ read_2004_section_objfreespace (Bit_Chain *restrict dat, Dwg_Data *restrict dwg)
   // clang-format on
 
   LOG_TRACE ("\n")
-  if (sec_dat.chain)
-    free (sec_dat.chain);
+  FREE_IF (sec_dat.chain);
   *dat = old_dat; // unrestrict
   return error;
 }
@@ -3464,8 +3438,7 @@ read_2004_section_template (Bit_Chain *restrict dat, Dwg_Data *restrict dwg)
           // violated by Teigha 4.3.2
           LOG_ERROR ("%s section not found\n", "Template")
         }
-      if (sec_dat.chain)
-        free (sec_dat.chain);
+      FREE_IF (sec_dat.chain);
       return 0;
     }
 
@@ -3477,8 +3450,7 @@ read_2004_section_template (Bit_Chain *restrict dat, Dwg_Data *restrict dwg)
   error |= template_private (dat, dwg);
 
   LOG_TRACE ("\n")
-  if (sec_dat.chain)
-    free (sec_dat.chain);
+  FREE_IF (sec_dat.chain);
   *dat = old_dat; // unrestrict
   return error;
 }
@@ -3514,8 +3486,7 @@ read_2004_section_acds (Bit_Chain *restrict dat, Dwg_Data *restrict dwg)
   if (error >= DWG_ERR_CRITICAL || !sec_dat.chain)
     {
       LOG_INFO ("%s section not found\n", secname)
-      if (sec_dat.chain)
-        free (sec_dat.chain);
+      FREE_IF (sec_dat.chain);
       return 0;
     }
 
@@ -3528,8 +3499,7 @@ read_2004_section_acds (Bit_Chain *restrict dat, Dwg_Data *restrict dwg)
   error &= ~DWG_ERR_SECTIONNOTFOUND;
 
   LOG_TRACE ("\n")
-  if (sec_dat.chain)
-    free (sec_dat.chain);
+  FREE_IF (sec_dat.chain);
   *dat = old_dat; // unrestrict
   return error;
 }
@@ -3547,8 +3517,7 @@ read_2004_section_preview (Bit_Chain *restrict dat, Dwg_Data *restrict dwg)
   if (error >= DWG_ERR_CRITICAL || !sec_dat.chain)
     {
       LOG_ERROR ("Failed to read uncompressed %s section", "Preview");
-      if (sec_dat.chain)
-        free (sec_dat.chain);
+      FREE_IF (sec_dat.chain);
       return error;
     }
 
@@ -3559,15 +3528,14 @@ read_2004_section_preview (Bit_Chain *restrict dat, Dwg_Data *restrict dwg)
   if (!sec_dat.chain || sec_dat.size < 32)
     {
       LOG_WARN ("Empty thumbnail");
-      if (sec_dat.chain)
-        free (sec_dat.chain);
+      FREE_IF (sec_dat.chain);
       return error;
     }
   sentinel = dwg_sentinel (DWG_SENTINEL_THUMBNAIL_BEGIN);
   if (memcmp (sentinel, sec_dat.chain, 16))
     {
       LOG_WARN ("thumbnail sentinel mismatch");
-      free (sec_dat.chain);
+      FREE_IF (sec_dat.chain);
       return error;
     }
   assert (sec_dat.size >= 32);
@@ -3807,9 +3775,9 @@ decode_R2004 (Bit_Chain *restrict dat, Dwg_Data *restrict dwg)
       unsigned u;
       for (u = 0; u < dwg->header.num_infos; ++u)
         if (dwg->header.section_info[u].sections != 0)
-          free(dwg->header.section_info[u].sections);
+          FREE(dwg->header.section_info[u].sections);
 
-      free(dwg->header.section_info);
+      FREE(dwg->header.section_info);
       dwg->header.num_infos = 0;
     }
 #endif
@@ -3908,9 +3876,9 @@ dwg_decode_eed_data (Bit_Chain *restrict dat, Dwg_Eed_Data *restrict data,
 #if 0
             obj->num_eed = 0;
             if (obj->eed[idx].size)
-              free(obj->eed[idx].raw);
-            free(obj->eed[idx].data);
-            free(obj->eed);
+              FREE(obj->eed[idx].raw);
+            FREE(obj->eed[idx].data);
+            FREE(obj->eed);
             obj->eed = NULL;
             dat->byte = end;
             return DWG_ERR_INVALIDEED; /* may not continue */
@@ -3936,7 +3904,7 @@ dwg_decode_eed_data (Bit_Chain *restrict dat, Dwg_Eed_Data *restrict data,
         /* code:1 + len:2 NUL? */
         for (j = 0; j < MIN (lens, (unsigned long)((size - 3) / 2)); j++)
           data->u.eed_0_r2007.string[j] = bit_read_RS (dat);
-          // data->u.eed_0_r2007.string[j] = 0; //already calloc'ed
+          // data->u.eed_0_r2007.string[j] = 0; //already CALLOC'ed
 #ifdef _WIN32
         LOG_TRACE ("wstring: len=%d [RS] \"" FORMAT_TU "\" [TU]\n",
                    (int)lens, data->u.eed_0_r2007.string);
@@ -3946,7 +3914,7 @@ dwg_decode_eed_data (Bit_Chain *restrict dat, Dwg_Eed_Data *restrict data,
             char *u8 = bit_TU_to_utf8_len (data->u.eed_0_r2007.string, lens);
             LOG_TRACE ("wstring: len=%d [RS] \"%s\" [TU]\n",
                        (int)lens, u8);
-            free (u8);
+            FREE (u8);
           }
 #endif
       }
@@ -4068,12 +4036,12 @@ dwg_decode_eed (Bit_Chain *restrict dat, Dwg_Object_Object *restrict obj)
       if (idx) /* just extend by one. not in chunks for now */
         {
           obj->eed
-              = (Dwg_Eed *)realloc (obj->eed, obj->num_eed * sizeof (Dwg_Eed));
+              = (Dwg_Eed *)REALLOC (obj->eed, obj->num_eed * sizeof (Dwg_Eed));
           memset (&obj->eed[idx], 0, sizeof (Dwg_Eed));
         }
       else
         {
-          obj->eed = (Dwg_Eed *)calloc (1, sizeof (Dwg_Eed));
+          obj->eed = (Dwg_Eed *)CALLOC (1, sizeof (Dwg_Eed));
         }
       obj->eed[idx].size = size;
       error |= bit_read_H (dat, &obj->eed[idx].handle);
@@ -4084,7 +4052,9 @@ dwg_decode_eed (Bit_Chain *restrict dat, Dwg_Object_Object *restrict obj)
           obj->eed[idx].size = 0;
           obj->num_eed--;
           if (!obj->num_eed)
-            dwg_free_eed (_obj);
+            {
+              dwg_free_eed (_obj);
+            }
           dat->byte = end; // skip eed
           continue;        // continue for size = bit_read_BS(dat)
         }
@@ -4138,7 +4108,7 @@ dwg_decode_eed (Bit_Chain *restrict dat, Dwg_Object_Object *restrict obj)
 
       while (dat->byte < end)
         {
-          obj->eed[idx].data = (Dwg_Eed_Data *)calloc (size + 8, 1);
+          obj->eed[idx].data = (Dwg_Eed_Data *)CALLOC (size + 8, 1);
           LOG_TRACE ("EED[%u] ", idx);
           error |= dwg_decode_eed_data (dat, obj->eed[idx].data, end, size);
           // overflow or no advance
@@ -4146,7 +4116,7 @@ dwg_decode_eed (Bit_Chain *restrict dat, Dwg_Object_Object *restrict obj)
             error |= DWG_ERR_INVALIDEED;
           if (error & DWG_ERR_INVALIDEED)
             {
-              free (obj->eed[idx].data);
+              FREE (obj->eed[idx].data);
               LOG_HANDLE ("        invalid eed[%d]: skip\n", idx);
               LOG_RPOS
               obj->eed[idx].data = NULL;
@@ -4169,7 +4139,7 @@ dwg_decode_eed (Bit_Chain *restrict dat, Dwg_Object_Object *restrict obj)
               size = (long)(end - dat->byte + 1);
               //LOG_INSANE ("        size remaining: %ld\n", (long)size);
               //LOG_RPOS
-              obj->eed = (Dwg_Eed *)realloc (obj->eed,
+              obj->eed = (Dwg_Eed *)REALLOC (obj->eed,
                                              obj->num_eed * sizeof (Dwg_Eed));
               obj->eed[idx].handle = obj->eed[idx - 1].handle;
               obj->eed[idx].size = 0;
@@ -4633,10 +4603,10 @@ dwg_decode_add_object_ref (Dwg_Data *restrict dwg, Dwg_Object_Ref *ref)
 
   // Reserve memory space for object references
   if (!dwg->num_object_refs)
-    dwg->object_ref = (Dwg_Object_Ref **)calloc (REFS_PER_REALLOC, sizeof (Dwg_Object_Ref *));
+    dwg->object_ref = (Dwg_Object_Ref **)CALLOC (REFS_PER_REALLOC, sizeof (Dwg_Object_Ref *));
   else if (dwg->num_object_refs % REFS_PER_REALLOC == 0)
     dwg->object_ref
-        = (Dwg_Object_Ref **)realloc (dwg->object_ref, (dwg->num_object_refs + REFS_PER_REALLOC)
+        = (Dwg_Object_Ref **)REALLOC (dwg->object_ref, (dwg->num_object_refs + REFS_PER_REALLOC)
                                      * sizeof (Dwg_Object_Ref *));
   if (!dwg->object_ref)
     {
@@ -4653,7 +4623,7 @@ dwg_decode_add_object_ref (Dwg_Data *restrict dwg, Dwg_Object_Ref *ref)
 Dwg_Object_Ref *
 dwg_new_ref (Dwg_Data *restrict dwg)
 {
-  Dwg_Object_Ref *ref = (Dwg_Object_Ref *)calloc (1, sizeof (Dwg_Object_Ref));
+  Dwg_Object_Ref *ref = (Dwg_Object_Ref *)CALLOC (1, sizeof (Dwg_Object_Ref));
   if (!ref)
     {
       LOG_ERROR ("Out of memory");
@@ -4661,7 +4631,7 @@ dwg_new_ref (Dwg_Data *restrict dwg)
     }
   if (dwg_decode_add_object_ref (dwg, ref))
     {
-      free (ref);
+      FREE (ref);
       return NULL;
     }
   return ref;
@@ -4674,7 +4644,7 @@ dwg_decode_handleref (Bit_Chain *restrict dat, Dwg_Object *restrict obj,
                       Dwg_Data *restrict dwg)
 {
   // Welcome to the house of evil code
-  Dwg_Object_Ref *ref = (Dwg_Object_Ref *)calloc (1, sizeof (Dwg_Object_Ref));
+  Dwg_Object_Ref *ref = (Dwg_Object_Ref *)CALLOC (1, sizeof (Dwg_Object_Ref));
   if (!ref)
     {
       LOG_ERROR ("Out of memory");
@@ -4682,7 +4652,7 @@ dwg_decode_handleref (Bit_Chain *restrict dat, Dwg_Object *restrict obj,
     }
   if (bit_read_H (dat, &ref->handleref))
     {
-      free (ref);
+      FREE (ref);
       return NULL;
     }
 
@@ -4692,7 +4662,7 @@ dwg_decode_handleref (Bit_Chain *restrict dat, Dwg_Object *restrict obj,
     {
       if (dwg_decode_add_object_ref (dwg, ref))
         {
-          free (ref);
+          FREE (ref);
           return NULL;
         }
     }
@@ -4700,7 +4670,7 @@ dwg_decode_handleref (Bit_Chain *restrict dat, Dwg_Object *restrict obj,
     {
       if (obj)
         {
-          free (ref);
+          FREE (ref);
           return NULL;
         }
       ref->absolute_ref = 0;
@@ -4789,7 +4759,7 @@ dwg_decode_handleref_with_code (Bit_Chain *restrict dat,
                                 Dwg_Data *restrict dwg, unsigned int code)
 {
   int err;
-  Dwg_Object_Ref *ref = (Dwg_Object_Ref *)calloc (1, sizeof (Dwg_Object_Ref));
+  Dwg_Object_Ref *ref = (Dwg_Object_Ref *)CALLOC (1, sizeof (Dwg_Object_Ref));
   if (!ref)
     {
       LOG_ERROR ("Out of memory");
@@ -4797,7 +4767,7 @@ dwg_decode_handleref_with_code (Bit_Chain *restrict dat,
     }
   if (bit_read_H (dat, &ref->handleref))
     {
-      free (ref);
+      FREE (ref);
       return NULL;
     }
 
@@ -4809,7 +4779,7 @@ dwg_decode_handleref_with_code (Bit_Chain *restrict dat,
     {
       if (dwg_decode_add_object_ref (dwg, ref))
         {
-          free (ref);
+          FREE (ref);
           return NULL;
         }
     }
@@ -4817,7 +4787,7 @@ dwg_decode_handleref_with_code (Bit_Chain *restrict dat,
     {
       /*if (obj)
         {
-          free (ref);
+          FREE (ref);
           return NULL;
         }
       */
@@ -4927,8 +4897,8 @@ dwg_free_xdata_resbuf (Dwg_Resbuf *rbuf)
       Dwg_Resbuf *next = rbuf->nextrb;
       short type = dwg_resbuf_value_type (rbuf->type);
       if (type == DWG_VT_STRING || type == DWG_VT_BINARY)
-        free (rbuf->value.str.u.data);
-      free (rbuf);
+        FREE (rbuf->value.str.u.data);
+      FREE (rbuf);
       rbuf = next;
     }
 }
@@ -4968,7 +4938,7 @@ dwg_decode_xdata (Bit_Chain *restrict dat, Dwg_Object_XRECORD *restrict obj,
   while (dat->byte < end_address)
     {
       enum RESBUF_VALUE_TYPE vtype;
-      rbuf = (Dwg_Resbuf *)calloc (1, sizeof (Dwg_Resbuf));
+      rbuf = (Dwg_Resbuf *)CALLOC (1, sizeof (Dwg_Resbuf));
       if (!rbuf)
         {
           LOG_ERROR ("Out of memory");
@@ -4981,14 +4951,14 @@ dwg_decode_xdata (Bit_Chain *restrict dat, Dwg_Object_XRECORD *restrict obj,
       if (dat->byte == curr_address || dat->byte >= end_address)
         {
           // no advance, by dat overflow
-          free (rbuf);
+          FREE (rbuf);
           dat->byte = end_address;
           break;
         }
       if (rbuf->type < 0 || rbuf->type >= 2000)
         {
           LOG_ERROR ("Invalid xdata type %d [RS]", rbuf->type);
-          free (rbuf);
+          FREE (rbuf);
           dat->byte = end_address;
           break;
         }
@@ -5017,7 +4987,7 @@ dwg_decode_xdata (Bit_Chain *restrict dat, Dwg_Object_XRECORD *restrict obj,
             length = bit_read_RS (dat);
             if ((short)length > 0 && dat->byte + (length * 2) <= end_address)
               {
-                rbuf->value.str.u.wdata = (BITCODE_TU)calloc (length + 1, 2);
+                rbuf->value.str.u.wdata = (BITCODE_TU)CALLOC (length + 1, 2);
                 if (!rbuf->value.str.u.wdata)
                   {
                     LOG_ERROR ("Out of memory");
@@ -5027,7 +4997,7 @@ dwg_decode_xdata (Bit_Chain *restrict dat, Dwg_Object_XRECORD *restrict obj,
                       {
                         dwg_free_xdata_resbuf (root);
                         if (rbuf)
-                          free (rbuf);
+                          FREE (rbuf);
                       }
                     else
                       dwg_free_xdata_resbuf (rbuf);
@@ -5300,9 +5270,9 @@ decode_preR13_entities (unsigned long start, unsigned long end,
 
       if (!num)
         dwg->object
-          = (Dwg_Object *)calloc (REFS_PER_REALLOC, sizeof (Dwg_Object));
+          = (Dwg_Object *)CALLOC (REFS_PER_REALLOC, sizeof (Dwg_Object));
       else if (num % REFS_PER_REALLOC == 0)
-        dwg->object = (Dwg_Object *)realloc (
+        dwg->object = (Dwg_Object *)REALLOC (
             dwg->object, (num + REFS_PER_REALLOC) * sizeof (Dwg_Object));
       if (!dwg->object)
         {
@@ -5464,7 +5434,7 @@ dwg_add_object (Dwg_Data *restrict dwg)
     dwg->num_alloced_objects = num;
   if (!num && !dwg->object)
     {
-      dwg->object = (Dwg_Object *)calloc (1024, sizeof (Dwg_Object));
+      dwg->object = (Dwg_Object *)CALLOC (1024, sizeof (Dwg_Object));
       dwg->num_alloced_objects = 1024;
       dwg->dirty_refs = 1;
     }
@@ -5475,11 +5445,15 @@ dwg_add_object (Dwg_Data *restrict dwg)
         dwg->num_alloced_objects = 1;
       while (num >= dwg->num_alloced_objects)
         dwg->num_alloced_objects *= 2;
-      dwg->object = (Dwg_Object *)realloc (
+      dwg->object = (Dwg_Object *)REALLOC (
           dwg->object, dwg->num_alloced_objects * sizeof (Dwg_Object));
       realloced = old != dwg->object;
-      if (realloced)
+      if (realloced) {
+#ifdef HAVE_LIBGC
+        GC_gcollect();
+#endif
         dwg->dirty_refs = 1;
+      }
     }
   if (!dwg->object)
     return DWG_ERR_OUTOFMEM;
@@ -5519,7 +5493,7 @@ dwg_decode_add_object (Dwg_Data *restrict dwg, Bit_Chain *dat,
 
   // DEBUG_HERE;
   /*
-   * Reserve memory space for objects. A realloc violates all internal
+   * Reserve memory space for objects. A REALLOC violates all internal
    * pointers.
    */
   realloced = dwg_add_object (dwg);
@@ -6076,7 +6050,7 @@ dwg_validate_POLYLINE (Dwg_Object *restrict obj)
               if (seqend == NULL)
                 {
                   seqend
-                      = (Dwg_Object_Ref *)calloc (1, sizeof (Dwg_Object_Ref));
+                      = (Dwg_Object_Ref *)CALLOC (1, sizeof (Dwg_Object_Ref));
                   seqend->obj = next;
                   seqend->handleref = next->handle;
                   seqend->absolute_ref = next->handle.value;
@@ -6096,7 +6070,7 @@ dwg_validate_POLYLINE (Dwg_Object *restrict obj)
                       seqend = dwg_find_objectref (dwg, next);
                       if (seqend == NULL)
                         {
-                          seqend = (Dwg_Object_Ref *)calloc (
+                          seqend = (Dwg_Object_Ref *)CALLOC (
                               1, sizeof (Dwg_Object_Ref));
                           seqend->obj = next;
                           seqend->handleref = next->handle;
@@ -6211,7 +6185,7 @@ int dwg_fixup_BLOCKS_entities (Dwg_Data *restrict dwg)
                              _objname, j, obj->name);
                   changes++;
                   if (is_uni)
-                    free (_objname);
+                    FREE (_objname);
                   continue;
                 }
               // only log changes
@@ -6320,7 +6294,7 @@ int dwg_fixup_BLOCKS_entities (Dwg_Data *restrict dwg)
                 }
             }
           if (is_uni)
-            free (_objname);
+            FREE (_objname);
         }
     }
   LOG_TRACE ("\n");
@@ -6335,7 +6309,7 @@ dwg_ref_objname (const Dwg_Data *restrict dwg, Dwg_Object_Ref *restrict ref)
 }
 
 // supports tables entries and everything with a name.
-// r2007 names are returned as malloc'ed utf-8
+// r2007 names are returned as MALLOC'ed utf-8
 static const char *
 dwg_ref_tblname (const Dwg_Data *restrict dwg, Dwg_Object_Ref *restrict ref)
 {

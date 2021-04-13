@@ -147,15 +147,15 @@ static unsigned int cur_ver = 0;
         char *_buf = (char *)alloca (_len);                                   \
         PREFIX fprintf (dat->fh, "\"" #name "\": \"%s\",\n",                  \
                         json_cquote (_buf, str, _len));                       \
-        freea (_buf);                                                         \
+        FREEa (_buf);                                                         \
       }                                                                       \
     else                                                                      \
       {                                                                       \
         const int _len = 6 * len + 1;                                         \
-        char *_buf = (char *)malloc (_len);                                   \
+        char *_buf = (char *)MALLOC (_len);                                   \
         PREFIX fprintf (dat->fh, "\"" #name "\": \"%s\",\n",                  \
                         json_cquote (_buf, str, _len));                       \
-        free (_buf);                                                          \
+        FREE (_buf);                                                          \
       }                                                                       \
   }
 #define PAIR_S(name, str)                                                     \
@@ -389,7 +389,7 @@ normalize_polygon_orient (BITCODE_BL numpts, dwg_point_2d **const pts_p)
     {
       // reverse and return a copy
       unsigned last = numpts - 1;
-      dwg_point_2d *new = malloc (numpts * sizeof (BITCODE_2RD));
+      dwg_point_2d *new = MALLOC (numpts * sizeof (BITCODE_2RD));
       //fprintf (stderr, "%u pts, sum %f: reverse orient\n", numpts, sum);
       for (unsigned i = 0; i < numpts; i++)
         {
@@ -434,7 +434,7 @@ dwg_geojson_feature (Bit_Chain *restrict dat, Dwg_Object *restrict obj,
             {
               PAIR_S (Layer, name);
               if (IS_FROM_TU (dat))
-                free (name);
+                FREE (name);
             }
         }
 
@@ -463,7 +463,7 @@ dwg_geojson_feature (Bit_Chain *restrict dat, Dwg_Object *restrict obj,
         {
           PAIR_S (Linetype, name);
           if (IS_FROM_TU (dat))
-            free (name);
+            FREE (name);
         }
     }
 
@@ -476,7 +476,7 @@ dwg_geojson_feature (Bit_Chain *restrict dat, Dwg_Object *restrict obj,
         {
           char *utf8 = bit_convert_TU ((BITCODE_TU)_obj->notes);
           PAIR_S (Text, utf8)
-          free (utf8);
+          FREE (utf8);
         }
       else
         {
@@ -490,7 +490,7 @@ dwg_geojson_feature (Bit_Chain *restrict dat, Dwg_Object *restrict obj,
         {
           char *utf8 = bit_convert_TU ((BITCODE_TU)_obj->text_value);
           PAIR_S (Text, utf8)
-          free (utf8);
+          FREE (utf8);
         } 
       else
         {      
@@ -504,7 +504,7 @@ dwg_geojson_feature (Bit_Chain *restrict dat, Dwg_Object *restrict obj,
         {
           char *utf8 = bit_convert_TU ((BITCODE_TU)_obj->text);
           PAIR_S (Text, utf8)
-          free (utf8);
+          FREE (utf8);
         } 
       else
         {      
@@ -527,7 +527,7 @@ dwg_geojson_feature (Bit_Chain *restrict dat, Dwg_Object *restrict obj,
             {
               PAIR_S (name, text);
               if (IS_FROM_TU (dat))
-                free (text);
+                FREE (text);
             }
         }
     }
@@ -547,7 +547,7 @@ dwg_geojson_feature (Bit_Chain *restrict dat, Dwg_Object *restrict obj,
             {
               PAIR_S (name, text);
               if (IS_FROM_TU (dat))
-                free (text);
+                FREE (text);
             }
         }
     }
@@ -590,7 +590,7 @@ dwg_geojson_LWPOLYLINE (Bit_Chain *restrict dat, Dwg_Object *restrict obj, int i
       LASTENDARRAY;
       LASTENDARRAY;
       if (changed)
-        free (pts);
+        FREE (pts);
     }
   else
     {
@@ -710,7 +710,7 @@ dwg_geojson_object (Bit_Chain *restrict dat, Dwg_Object *restrict obj, int is_la
             orig = pts; // pts is already a new copy
             changed = normalize_polygon_orient (numpts, &pts); // RFC7946
             if (changed)
-              free (orig);
+              FREE (orig);
             GEOMETRY (Polygon)
             KEY (coordinates);
             ARRAY;
@@ -721,7 +721,7 @@ dwg_geojson_object (Bit_Chain *restrict dat, Dwg_Object *restrict obj, int is_la
             LASTENDARRAY;
             LASTENDARRAY;
             if (changed)
-              free (pts);
+              FREE (pts);
           }
         else
           {
@@ -735,7 +735,7 @@ dwg_geojson_object (Bit_Chain *restrict dat, Dwg_Object *restrict obj, int is_la
                 else
                   VALUE_2DPOINT (pts[j].x, pts[j].y);
               }
-            free (pts);
+            FREE (pts);
             LASTENDARRAY;
           }
         ENDGEOMETRY;
@@ -768,7 +768,7 @@ dwg_geojson_object (Bit_Chain *restrict dat, Dwg_Object *restrict obj, int is_la
                 VALUE_3DPOINT (pts[j].x, pts[j].y, pts[j].z);
               }
           }
-        free (pts);
+        FREE (pts);
         LASTENDARRAY;
         ENDGEOMETRY;
         ENDFEATURE;

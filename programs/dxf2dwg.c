@@ -121,6 +121,7 @@ int main (int argc, char *argv[])
   FILE *fp;
   struct stat attrib;
 
+  GC_INIT();
   __AFL_INIT();
   //dat.opts = 3;
 
@@ -152,7 +153,7 @@ int main (int argc, char *argv[])
       bit_chain_set_version (&out_dat, &dat);
       out_dat.version = R_2000;      
       dwg_encode (&dwg, &out_dat);
-      free (out_dat.chain);
+      FREE (out_dat.chain);
       dwg_free (&dwg);
     }
   }
@@ -301,7 +302,7 @@ main (int argc, char *argv[])
       if (strEQ (filename_in, filename_out))
         {
           if (filename_out != argv[i - 1])
-            free (filename_out);
+            FREE (filename_out);
           return usage ();
         }
 
@@ -314,7 +315,7 @@ main (int argc, char *argv[])
         {
           fprintf (stderr, "READ ERROR 0x%x %s\n", error, filename_in);
           if (need_free)
-            free (filename_out);
+            FREE (filename_out);
           continue;
         }
 
@@ -411,7 +412,7 @@ main (int argc, char *argv[])
         {
           dwg_free (&dwg);
           if (need_free)
-            free (filename_out);
+            FREE (filename_out);
         }
       filename_out = NULL;
     }

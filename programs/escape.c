@@ -32,7 +32,7 @@ htmlescape (const char *restrict src, const int cp)
   if (!src)
     return NULL;
   len = strlen (src) + 10;
-  d = calloc (len, 1);
+  d = CALLOC (len, 1);
   s = (unsigned char *)src;
   dest = d;
   end = dest + len;
@@ -42,7 +42,7 @@ htmlescape (const char *restrict src, const int cp)
       if (end - d <= 8)
         {
           len += 10;
-          dest = realloc (dest, len);
+          dest = REALLOC (dest, len);
           d = dest + off;
           *d = 0;
           end = dest + len;
@@ -113,7 +113,7 @@ htmlwescape (BITCODE_TU wstr)
   while ((c = *tmp++))
     len++;
   len += 16;
-  d = dest = calloc (len, 1);
+  d = dest = CALLOC (len, 1);
 
   while (*wstr)
     {
@@ -121,7 +121,7 @@ htmlwescape (BITCODE_TU wstr)
       if (off >= len - 8)
         {
           len += 16;
-          dest = realloc (dest, len);
+          dest = REALLOC (dest, len);
           d = dest + off;
           *d = 0;
         }

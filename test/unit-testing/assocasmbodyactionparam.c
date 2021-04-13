@@ -105,7 +105,7 @@ api_process (dwg_object *obj)
                 }
             }
         }
-      free (silhouettes);
+      FREE (silhouettes);
     }
   else
     fail ("ASSOCASMBODYACTIONPARAM.silhouettes");

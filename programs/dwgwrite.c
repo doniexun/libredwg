@@ -116,6 +116,7 @@ int main (int argc, char *argv[])
   Bit_Chain out_dat = { NULL, 0, 0, 0, 0 };
   FILE *fp;
 
+  GC_INIT();
   __AFL_INIT();
   dat.chain = NULL;
   dat.version = R_2000;
@@ -147,7 +148,7 @@ int main (int argc, char *argv[])
       out_dat.version = R_2000;      
       if (dwg_encode (&dwg, &out_dat) >= DWG_ERR_CRITICAL)
         exit (0);
-      free (out_dat.chain);
+      FREE (out_dat.chain);
     }
     else
       exit (0);
@@ -395,15 +396,15 @@ main (int argc, char *argv[])
         fprintf (stderr, "Missing input format\n");
       if (infile)
         fclose (dat.fh);
-      free (dat.chain);
+      FREE (dat.chain);
       exit (1);
     }
 
-  free (dat.chain);
+  FREE (dat.chain);
   if (infile && dat.fh)
     fclose (dat.fh);
   if (error >= DWG_ERR_CRITICAL)
-    goto free;
+    goto FREE;
 
   if (dwg.header.from_version == R_INVALID)
     fprintf (stderr, "Unknown DWG header.from_version");
@@ -471,7 +472,7 @@ main (int argc, char *argv[])
       }
   }
 
-  free:
+  FREE:
 #if defined __SANITIZE_ADDRESS__ || __has_feature(address_sanitizer)
   {
     char *asanenv = getenv("ASAN_OPTIONS");
@@ -516,6 +517,8 @@ main (int argc, char *argv[])
     }
 
   if (free_outfile)
-    free (outfile);
+    {
+      FREE (outfile);
+    }
   return error >= DWG_ERR_CRITICAL ? 1 : 0;
 }

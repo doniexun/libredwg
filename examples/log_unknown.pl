@@ -13,7 +13,7 @@ no strict;
 my $td = "test/test-data";
 my $tb = "test/test-big";
 
-# also triggered by objectmap (print) and free
+# also triggered by objectmap (print) and FREE
 if (/ Hdlsize: (\d+)[, ]/) {
   $hdlsize = $1; next;
 }

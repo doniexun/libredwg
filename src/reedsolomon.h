@@ -11,6 +11,6 @@ int rs_decode_block (unsigned char *blk, int fix);
 
 /*
  * Encode a block. Only the trailing 16 parity bytes are computed in
- * a buffer which caller preallocates.
+ * a buffer which caller pREALLOCates.
  */
 void rs_encode_block (unsigned char *parity, unsigned char *src, int count);

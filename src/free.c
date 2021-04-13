@@ -55,13 +55,6 @@ static BITCODE_BL rcount1, rcount2;
 #define ACTION free
 #define IS_FREE
 
-#define FREE_IF(ptr)                                                          \
-  {                                                                           \
-    if (ptr)                                                                  \
-      free (ptr);                                                             \
-    ptr = NULL;                                                               \
-  }
-
 #undef UNTIL
 #undef SINCE
 #undef PRE
@@ -113,8 +106,7 @@ static BITCODE_BL rcount1, rcount2;
 #define VALUE_HANDLE(ref, nam, _code, dxf)                                    \
   if (ref && !ref->handleref.is_global)                                       \
     {                                                                         \
-      free (ref);                                                             \
-      ref = NULL;                                                             \
+      FREE_IF (ref);                                                          \
     } /* else freed globally */
 #define FIELD_DATAHANDLE(name, code, dxf) FIELD_HANDLE (name, code, dxf)
 #define FIELD_HANDLE_N(name, vcount, code, dxf) FIELD_HANDLE (name, code, dxf)
@@ -241,7 +233,7 @@ static BITCODE_BL rcount1, rcount2;
         {                                                                     \
           SUB_FIELD_HANDLE (o,name[vcount], code, dxf);                       \
         }                                                                     \
-      FREE_IF (_obj->o.name)                                                  \
+      FREE_IF (_obj->o.name);                                                 \
     }
 #define SUB_FIELD_VECTOR(o, nam, sizefield, type, dxf)                        \
   if (_obj->o.sizefield && _obj->o.nam)                                       \
@@ -249,7 +241,7 @@ static BITCODE_BL rcount1, rcount2;
       for (vcount = 0; vcount < (BITCODE_BL) (_obj->o.sizefield); vcount++)   \
         SUB_FIELD_##type (o, nam[vcount], dxf);                               \
     }                                                                         \
-  FREE_IF (_obj->o.nam)
+  FREE_IF (_obj->o.nam);
 
 #define FIELD_NUM_INSERTS(num_inserts, type, dxf)
 #define FIELD_XDATA(name, size) dwg_free_xdata (_obj, _obj->size)
@@ -1237,6 +1229,11 @@ dwg_free_acds (Dwg_Data *dwg)
 void
 dwg_free (Dwg_Data *dwg)
 {
+#ifdef HAVE_LIBGC
+  dwg = NULL;
+  GC_gcollect();
+  return;
+#else
   BITCODE_BL i;
   if (dwg)
     {
@@ -1315,9 +1312,7 @@ dwg_free (Dwg_Data *dwg)
         }
       FREE_IF (dwg->object_ref);
       for (i = 0; i < dwg->num_acis_sab_hdl; ++i)
-        {
-          FREE_IF (dwg->acis_sab_hdl[i]);
-        }
+        FREE_IF (dwg->acis_sab_hdl[i]);
       FREE_IF (dwg->acis_sab_hdl);
       FREE_IF (dwg->object);
       if (dwg->object_map)
@@ -1325,6 +1320,7 @@ dwg_free (Dwg_Data *dwg)
       dwg->num_objects = dwg->num_classes = dwg->num_object_refs = 0;
 #undef FREE_IF
     }
+#endif
 }
 
 #undef IS_FREE

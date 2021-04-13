@@ -1,7 +1,7 @@
 /*****************************************************************************/
 /*  LibreDWG - free implementation of the DWG file format                    */
 /*                                                                           */
-/*  Copyright (C) 2013-2020 Free Software Foundation, Inc.                   */
+/*  Copyright (C) 2013-2021 Free Software Foundation, Inc.                   */
 /*                                                                           */
 /*  This library is free software, licensed under the terms of the GNU       */
 /*  General Public License as published by the Free Software Foundation,     */
@@ -26,6 +26,7 @@
 
 #include <dwg.h>
 #include <dwg_api.h>
+#include "../src/common.h"
 #include "../programs/geom.h"
 
 static int opts = 0;
@@ -149,7 +150,7 @@ output_TEXT (dwg_object *obj)
           text_value);
 
   if (text_value && isnew)
-    free (text_value);
+    FREE (text_value);
 }
 
 static void
@@ -336,7 +337,7 @@ output_BLOCK_HEADER (dwg_object_ref *ref)
               name ? name : "");
       if (name != NULL && name != _hdr->name
           && hdr->parent->header.version >= R_2007)
-        free (name);
+        FREE (name);
     }
   else
     printf ("\t<g id=\"symbol-%X\" >\n\t\t<!-- ? -->\n", abs_ref ? abs_ref : 0);
@@ -399,7 +400,7 @@ output_SVG (dwg_data *dwg)
 
   output_BLOCK_HEADER (dwg_model_space_ref (dwg));
   output_BLOCK_HEADER (dwg_paper_space_ref (dwg));
-  free (hdr_refs);
+  FREE (hdr_refs);
 
   printf ("</svg>\n");
 }
@@ -418,6 +419,7 @@ main (int argc, char *argv[])
           { NULL, 0, NULL, 0 } };
 #endif
 
+  GC_INIT();
   if (argc < 2)
     return usage ();
 

@@ -19,12 +19,12 @@
  */
 
 #include "config.h"
-#ifdef __STDC_ALLOC_LIB__ /* for strdup */
-# define __STDC_WANT_LIB_EXT2__ 1 /* for strdup */
+#ifdef __STDC_ALLOC_LIB__ /* for STRDUP */
+# define __STDC_WANT_LIB_EXT2__ 1 /* for STRDUP */
 #else
 # define _USE_BSD 1
 #endif
-#ifndef _XOPEN_SOURCE /* for strdup, snprintf */
+#ifndef _XOPEN_SOURCE /* for STRDUP, snprintf */
 # define _XOPEN_SOURCE 700
 #endif
 #include <stdlib.h>
@@ -35,7 +35,7 @@
 char *
 suffix (const char *filename, const char *ext);
 
-/* Return a newly `malloc'ed string made from "re-suffixing" FILENAME with
+/* Return a newly `MALLOC'ed string made from "re-suffixing" FILENAME with
    ".EXT" (note dot).  That is, when FILENAME has the form "STEM.dwg" the
    value is "STEM.EXT", otherwise the value is "FILENAME.EXT".
 
@@ -43,14 +43,14 @@ suffix (const char *filename, const char *ext);
 char *
 suffix (const char *filename, const char *ext)
 {
-  char *copy = strdup (filename ? filename : "");
+  char *copy = STRDUP (filename ? filename : "");
 #ifdef HAVE_BASENAME
   char *base = basename (copy);
 #else
   char *base = copy;
 #endif
   int len = (base ? strlen (base) : 0) + 1 + strlen (ext) + 1;
-  char *rv = malloc (len);
+  char *rv = MALLOC (len);
   char *dot;
 
   if (!base) // basename may fail
@@ -74,7 +74,7 @@ suffix (const char *filename, const char *ext)
     snprintf (rv, len, "%s%s", base, ext);
   else
     snprintf (rv, len, "%s.%s", base, ext);
-  free (copy);
+  FREE (copy);
   return rv;
 }
 

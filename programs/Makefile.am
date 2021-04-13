@@ -20,6 +20,9 @@
 WARN_CFLAGS = @WARN_CFLAGS@
 AM_CFLAGS   = -I$(top_srcdir)/include -I$(top_srcdir)/src $(WARN_CFLAGS)
 LDADD       = $(top_builddir)/src/libredwg.la
+if HAVE_LIBGC
+LDADD      += -lgc
+endif
 
 bin_PROGRAMS    = dwgread
 noinst_PROGRAMS =

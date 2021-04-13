@@ -1,7 +1,7 @@
 /*****************************************************************************/
 /*  LibreDWG - free implementation of the DWG file format                    */
 /*                                                                           */
-/*  Copyright (C) 2018-2020 Free Software Foundation, Inc.                   */
+/*  Copyright (C) 2018-2021 Free Software Foundation, Inc.                   */
 /*                                                                           */
 /*  This library is free software, licensed under the terms of the GNU       */
 /*  General Public License as published by the Free Software Foundation,     */
@@ -126,6 +126,7 @@ main (int argc, char *argv[])
           { "version", 0, 0, 0 },     { NULL, 0, NULL, 0 } };
 #endif
 
+  GC_INIT();
   if (argc < 2)
     return usage ();
 
@@ -248,7 +249,7 @@ main (int argc, char *argv[])
       if (strEQ (filename_in, filename_out))
         {
           if (need_free)
-            free (filename_out);
+            FREE (filename_out);
           return usage ();
         }
 
@@ -362,7 +363,7 @@ main (int argc, char *argv[])
         {
           dwg_free (&dwg);
           if (need_free)
-            free (filename_out);
+            FREE (filename_out);
         }
       filename_out = NULL;
     }

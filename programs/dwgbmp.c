@@ -72,6 +72,9 @@ help (void)
   return 0;
 }
 
+#ifdef HAVE_LIBGC
+#define bmp_free_dwg(x)
+#else
 static void
 bmp_free_dwg (Dwg_Data *dwg)
 {
@@ -94,6 +97,7 @@ bmp_free_dwg (Dwg_Data *dwg)
   )
     dwg_free (dwg);
 }
+#endif
 
 #pragma pack(1)
 
@@ -210,6 +214,7 @@ main (int argc, char *argv[])
           { NULL, 0, NULL, 0 } };
 #endif
 
+  GC_INIT();
   if (argc < 2)
     return usage ();
 
@@ -300,6 +305,6 @@ main (int argc, char *argv[])
     bmpfile = suffix (dwgfile, "bmp");
   error = get_bmp (dwgfile, bmpfile);
   if (i != argc - 2)
-    free (bmpfile);
+    FREE (bmpfile);
   return error;
 }
