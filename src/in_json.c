@@ -564,7 +564,7 @@ json_HANDLE (Bit_Chain *restrict dat, Dwg_Data *restrict dwg,
       ref = dwg_add_handleref (dwg, code, absref, (!code || code >= 6) ? obj : NULL);
       if ((BITCODE_RC)size != ref->handleref.size || (unsigned long)value != ref->handleref.value)
         {
-          // FIXME internal in_json problem only
+          // FIXME internal in_json problem only (GH #346 mingw64)
           LOG_INFO ("dwg_add_handle(%.*s) inconsistency => " FORMAT_REF "\n",
                     t->end - t->start, &dat->chain[t->start], ARGS_REF (ref));
           ref->handleref.size = (BITCODE_RC)size;
